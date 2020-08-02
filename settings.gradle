@@ -1,0 +1,8 @@
+rootProject.name = 'smartcity-api'
+
+include 'app-api'
+
+
+for (project in rootProject.children) {
+    project.projectDir = file("module/${project.name}")
+}

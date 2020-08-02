@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="co.kesti.smartcity.api.member.mapper.MemberMapper">
+
+    <!--
+     * ============
+     * ### 회원 ###
+     * ============
+     * @author atom
+     * @since  2020.07.16
+    -->
+
+    <!-- 회원 정보 조회 -->
+    <select id="selectMbrInfo" resultType="co.kesti.smartcity.api.member.vo.ComMbrVo">
+        SELECT /* MemberMapper.selectMbrInfo */
+               mbr_seq                          /* 회원일련번호 */
+             , mbr_id                           /* 회원ID */
+             , user_nm                          /* 사용자명 */
+             , mbr_pwd                          /* 비밀번호 */
+             , email                            /* 이메일 */
+             , fn_decrypt(mphon_no) AS mphon_no /* 전화번호 */
+             , email_recptn_yn                  /* 이메일수신여부 */
+             , sms_recptn_yn                    /* SMS수신여부 */
+             , mbr_clas                         /* 회원등급 */
+             , user_tokn                        /* 사용자토큰 */
+             , del_yn                           /* 삭제여부 */
+             , ip_address                       /* IP주소 */
+             , mbr_pwd_new                      /* 회원비밀번호신규 */
+             , chg_pwd_dt                       /* 비밀번호변경일 */
+             , tmp_pwd_iss_yn                   /* 임시비밀번호발급여부 */
+             , rmark                            /* 비고 */
+             , login_fail_tmscnt                /* 로그인실패횟수 */
+          FROM com_mbr /* 회원TABLE */
+         WHERE mbr_id = #{mbrId}
+           AND del_yn = 'N'
+    </select>
+
+    <!-- 회원 중복 건수 조회 -->
+    <select id="selectMbrDupCount" resultType="java.lang.Integer">
+        SELECT /* MemberMapper.selectMbrDupCount */
+               COUNT(*) AS cnt
+          FROM com_mbr /* 회원TABLE */
+         WHERE mbr_id = #{mbrId}
+    </select>
+
+    <!-- 회원 등록 -->
+    <insert id="insertMbr" parameterType="co.kesti.smartcity.api.member.vo.ComMbrVo">
+        INSERT /* MemberMapper.insertMbr */
+          INTO com_mbr (
+               mbr_seq                /* 회원일련번호 */
+             , mbr_id                 /* 회원ID */
+             , user_nm                /* 사용자명 */
+             , mbr_pwd                /* 비밀번호 */
+             , email                  /* 이메일 */
+             , mphon_no               /* 전화번호 */
+             , email_recptn_yn        /* 이메일수신여부 */
+             , sms_recptn_yn          /* SMS수신여부 */
+             , mbr_clas               /* 회원등급 */
+             , user_tokn              /* 사용자토큰 */
+             , del_yn                 /* 삭제여부 */
+             , ip_address             /* IP주소 */
+             , mbr_pwd_new            /* 회원비밀번호신규 */
+             , chg_pwd_dt             /* 비밀번호변경일 */
+             , tmp_pwd_iss_yn         /* 임시비밀번호발급여부 */
+             , rmark                  /* 비고 */
+             , login_fail_tmscnt      /* 로그인실패횟수 */
+             , cret_dt                /* 생성일시 */
+             , cretr_id               /* 생성자ID */
+             , amd_dt                 /* 수정일시 */
+             , amdr_id                /* 수정자ID */
+        ) VALUES (
+               DEFAULT                /* 회원일련번호 */
+             , #{mbrId}               /* 회원ID */
+             , #{userNm}              /* 사용자명 */
+             , #{mbrPwd}              /* 비밀번호 */
+             , #{email}               /* 이메일 */
+             , fn_encrypt(#{mphonNo}) /* 전화번호 */
+             , #{emailRecptnYn}       /* 이메일수신여부 */
+             , #{smsRecptnYn}         /* SMS수신여부 */
+             , #{mbrClas}             /* 회원등급 */
+             , #{userTokn}            /* 사용자토큰 */
+             , 'N'                    /* 삭제여부 */
+             , #{ipAddress}           /* IP주소 */
+             , #{mbrPwdNew}           /* 회원비밀번호신규 */
+             , NOW()                  /* 비밀번호변경일 */
+             , 'N'                    /* 임시비밀번호발급여부 */
+             , #{rmark}               /* 비고 */
+             , 0                      /* 로그인실패횟수 */
+             , NOW()                  /* 생성일시 */
+             , #{mbrId}               /* 생성자ID */
+             , NOW()                  /* 수정일시 */
+             , #{mbrId}               /* 수정자ID */
+        )
+    </insert>
+
+    <!-- 회원 수정 -->
+    <update id="updateMbr" parameterType="co.kesti.smartcity.api.member.vo.ComMbrVo">
+        UPDATE /* MemberMapper.updateMbr */
+               com_mbr
+           SET amd_dt          = NOW()            /* 수정일시 */
+             , amdr_id         = #{mbrId}         /* 수정자ID */
+             <if test="mbrPwd != null and mbrPwd != ''">
+             , mbr_pwd         = #{mbrPwd}        /* 비밀번호 */
+             </if>
+             <if test="emailRecptnYn != null">
+             , email_recptn_yn = #{emailRecptnYn} /* 이메일수신여부 */
+             </if>
+             <if test="smsRecptnYn != null">
+             , sms_recptn_yn   = #{smsRecptnYn}   /* SMS수신여부 */
+             </if>
+         WHERE mbr_id = #{mbrId}
+    </update>
+
+    <!-- 로그인 실패 건수 더하기 수정 -->
+    <update id="updateLognFailCntPlus">
+        UPDATE /* MemberMapper.updateLognFailCntPlus */
+               com_mbr
+           SET login_fail_tmscnt = login_fail_tmscnt + 1 /* 로그인실패횟수 */
+             , amd_dt            = NOW()                 /* 수정일시 */
+             , amdr_id           = #{mbrId}              /* 수정자ID */
+         WHERE mbr_id = #{mbrId}
+           AND del_yn = 'N'
+    </update>
+
+    <!-- 로그인 실패 건수 초기화 수정 -->
+    <update id="updateLognFailCntReset">
+        UPDATE /* MemberMapper.updateLognFailCntReset */
+               com_mbr
+           SET login_fail_tmscnt = 0        /* 로그인실패횟수 */
+             , amd_dt            = NOW()    /* 수정일시 */
+             , amdr_id           = #{mbrId} /* 수정자ID */
+         WHERE mbr_id = #{mbrId}
+    </update>
+
+    <!-- 회원 삭제 -->
+    <update id="deleteMbr">
+        UPDATE /* MemberMapper.deleteMbr */
+               com_mbr
+           SET del_yn  = 'Y'      /* 삭제여부 */
+             , amd_dt  = NOW()    /* 수정일시 */
+             , amdr_id = #{mbrId} /* 수정자ID */
+         WHERE mbr_id = #{mbrId}
+    </update>
+
+</mapper>

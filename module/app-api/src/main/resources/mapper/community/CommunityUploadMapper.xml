@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="co.kesti.smartcity.api.community.mapper.CommunityUploadMapper">
+
+    <!--
+     * =========================
+     * ### 커뮤니티 > 자료실 ###
+     * =========================
+     * @author atom
+     * @since  2020.07.25
+    -->
+
+    <!-- 자료실 정보 조회 -->
+    <select id="selectUpldInfo" resultType="co.kesti.smartcity.api.community.vo.CmntUpldVo">
+        SELECT /* CommunityUploadMapper.selectUpldInfo */
+               upload_seq                                 /* 자료실일련번호 */
+             , upload_title                               /* 자료실주제 */
+             , upload_contents                            /* 자료실내용 */
+             , attached_file_path                         /* 첨부파일경로 */
+             , hit_cnt                                    /* 조회수 */
+             , recmd_cnt                                  /* 추천수 */
+             , TO_CHAR(cret_dt, 'YYYY.MM.DD') AS cret_dt  /* 생성일시 */
+             , TO_CHAR(cret_dt, 'HH24:MI')    AS cret_tm  /* 생성시간 */
+             , fn_get_mbr_nm(cretr_id)        AS cretr_nm /* 생성자명 */
+          FROM cmnt_upload /* 자료실TABLE */
+         WHERE upload_seq = #{uploadSeq}
+    </select>
+
+    <!-- 자료실 이전 정보 조회 -->
+    <select id="selectUpldPrevInfo" resultType="co.kesti.smartcity.api.community.vo.CmntUpldVo">
+        SELECT /* CommunityUploadMapper.selectUpldPrevInfo */
+               upload_seq   /* 자료실일련번호 */
+             , upload_title /* 자료실주제 */
+          FROM cmnt_upload /* 자료실TABLE */
+         WHERE upload_seq > #{uploadSeq}
+           AND del_yn = 'N'
+         ORDER BY upload_seq ASC
+         LIMIT 1
+    </select>
+
+    <!-- 자료실 다음 정보 조회 -->
+    <select id="selectUpldNextInfo" resultType="co.kesti.smartcity.api.community.vo.CmntUpldVo">
+        SELECT /* CommunityUploadMapper.selectUpldNextInfo */
+               upload_seq   /* 자료실일련번호 */
+             , upload_title /* 자료실주제 */
+          FROM cmnt_upload /* 자료실TABLE */
+        <![CDATA[
+         WHERE upload_seq < #{uploadSeq}
+        ]]>
+           AND del_yn = 'N'
+         ORDER BY upload_seq DESC
+         LIMIT 1
+    </select>
+
+    <!-- 자료실 건수 조회 -->
+    <select id="selectUpldCount" parameterType="co.kesti.smartcity.api.community.vo.CmntUpldReqVo" resultType="java.lang.Integer">
+        SELECT /* CommunityUploadMapper.selectUpldCount */
+               COUNT(*) AS cnt
+          FROM cmnt_upload upl /* 자료실TABLE */
+         WHERE upl.del_yn = 'N'
+
+        <!-- WHERE 조건 -->
+        <include refid="whereUpldList" />
+    </select>
+
+    <!-- 자료실 목록 조회 -->
+    <select id="selectUpldList" parameterType="co.kesti.smartcity.api.community.vo.CmntUpldReqVo" resultType="co.kesti.smartcity.api.community.vo.CmntUpldVo">
+        SELECT /* CommunityUploadMapper.selectUpldList */
+               upl.upload_seq                                /* 자료실일련번호 */
+             , upl.upload_title                              /* 자료실주제 */
+             , upl.upload_contents                           /* 자료실내용 */
+             , upl.attached_file_path                        /* 첨부파일경로 */
+             , upl.hit_cnt                                   /* 조회수 */
+             , upl.recmd_cnt                                 /* 추천수 */
+             , TO_CHAR(upl.cret_dt, 'YYYY.MM.DD') AS cret_dt /* 생성일시 */
+          FROM cmnt_upload upl /* 자료실TABLE */
+         WHERE upl.del_yn = 'N'
+
+        <!-- WHERE 조건 -->
+        <include refid="whereUpldList" />
+
+         ORDER BY upl.upload_seq DESC
+        OFFSET #{rowIdx} LIMIT #{rowCnt}
+    </select>
+
+    <!-- 자료실 목록 WHERE 조건 -->
+    <sql id="whereUpldList">
+        <if test="schTpCd != null and schTpCd != '' and schKwd != null and schKwd != ''">
+            <!-- 제목 -->
+            <if test='"01".equals(schTpCd)'>
+                AND upl.upload_title LIKE '%' || #{schKwd} || '%'
+            </if>
+
+            <!-- 내용 -->
+            <if test='"02".equals(schTpCd)'>
+                AND upl.upload_contents LIKE '%' || #{schKwd} || '%'
+            </if>
+
+            <!-- 제목/내용 -->
+            <if test='"03".equals(schTpCd)'>
+                AND (upl.upload_title LIKE '%' || #{schKwd} || '%'
+                     OR upl.upload_contents LIKE '%' || #{schKwd} || '%')
+            </if>
+        </if>
+    </sql>
+
+    <!-- 자료실 조회수 더하기 수정 -->
+    <update id="updateUpldHitCntPlus" parameterType="co.kesti.smartcity.api.community.vo.CmntUpldVo">
+        UPDATE /* CommunityUploadMapper.updateUpldHitCntPlus */
+               cmnt_upload
+           SET hit_cnt = hit_cnt + 1
+         WHERE upload_seq = #{uploadSeq}
+    </update>
+
+</mapper>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="co.kesti.smartcity.api.community.mapper.CommunityNoticeMapper">
+
+    <!--
+     * ===========================
+     * ### 커뮤니티 > 공지사항 ###
+     * ===========================
+     * @author atom
+     * @since  2020.07.23
+    -->
+
+    <!-- 공지사항 정보 조회 -->
+    <select id="selectNotiInfo" resultType="co.kesti.smartcity.api.community.vo.CmntNotiVo">
+        SELECT /* CommunityNoticeMapper.selectNotiInfo */
+               notice_seq                                 /* 공지사항일련번호 */
+             , notice_tag                                 /* 공지사항태그 */
+             , notice_title                               /* 공지사항주제 */
+             , notice_contents                            /* 공지사항내용 */
+             , attached_file_path                         /* 첨부파일경로 */
+             , hit_cnt                                    /* 조회수 */
+             , recmd_cnt                                  /* 추천수 */
+             , TO_CHAR(cret_dt, 'YYYY.MM.DD') AS cret_dt  /* 생성일시 */
+             , TO_CHAR(cret_dt, 'HH24:MI')    AS cret_tm  /* 생성시간 */
+             , fn_get_mbr_nm(cretr_id)        AS cretr_nm /* 생성자명 */
+          FROM cmnt_notice /* 공지사항TABLE */
+         WHERE notice_seq = #{noticeSeq}
+    </select>
+
+    <!-- 공지사항 이전 정보 조회 -->
+    <select id="selectNotiPrevInfo" resultType="co.kesti.smartcity.api.community.vo.CmntNotiVo">
+        SELECT /* CommunityNoticeMapper.selectNotiPrevInfo */
+               notice_seq   /* 공지사항일련번호 */
+             , notice_title /* 공지사항주제 */
+          FROM fn_get_noti_prev_row(#{noticeSeq}, #{noticeTag})
+    </select>
+
+    <!-- 공지사항 다음 정보 조회 -->
+    <select id="selectNotiNextInfo" resultType="co.kesti.smartcity.api.community.vo.CmntNotiVo">
+        SELECT /* CommunityNoticeMapper.selectNotiPrevInfo */
+               notice_seq   /* 공지사항일련번호 */
+             , notice_title /* 공지사항주제 */
+          FROM fn_get_noti_next_row(#{noticeSeq}, #{noticeTag})
+    </select>
+
+    <!-- 공지사항 건수 조회 -->
+    <select id="selectNotiCount" parameterType="co.kesti.smartcity.api.community.vo.CmntNotiReqVo" resultType="java.lang.Integer">
+        SELECT /* CommunityNoticeMapper.selectNotiCount */
+               COUNT(*) AS cnt
+          FROM cmnt_notice nti /* 공지사항TABLE */
+         WHERE nti.del_yn = 'N'
+
+        <!-- WHERE 조건 -->
+        <include refid="whereNotiList" />
+    </select>
+
+    <!-- 공지사항 목록 조회 -->
+    <select id="selectNotiList" parameterType="co.kesti.smartcity.api.community.vo.CmntNotiReqVo" resultType="co.kesti.smartcity.api.community.vo.CmntNotiVo">
+        SELECT /* CommunityNoticeMapper.selectNotiList */
+               nti.notice_seq                                 /* 공지사항일련번호 */
+             , nti.notice_tag                                 /* 공지사항태그 */
+             , nti.notice_title                               /* 공지사항주제 */
+             , nti.notice_contents                            /* 공지사항내용 */
+             , nti.attached_file_path                         /* 첨부파일경로 */
+             , nti.hit_cnt                                    /* 조회수 */
+             , nti.recmd_cnt                                  /* 추천수 */
+             , TO_CHAR(nti.cret_dt, 'YYYY.MM.DD') AS cret_dt  /* 생성일시 */
+             , mbr.user_nm                        AS cretr_nm /* 생성자명 */
+             <![CDATA[
+             , CASE WHEN NOW()::DATE - nti.cret_dt::DATE <= 7 THEN 'Y'
+                    ELSE 'N'
+               END                                AS new_yn   /* 신규여부 */
+             ]]>
+          FROM cmnt_notice nti /* 공지사항TABLE */
+    INNER JOIN com_mbr mbr /* 회원TABLE */
+            ON nti.cretr_id = mbr.mbr_id
+         WHERE nti.del_yn = 'N'
+
+        <!-- WHERE 조건 -->
+        <include refid="whereNotiList" />
+
+         ORDER BY nti.notice_tag DESC, nti.notice_seq DESC
+        OFFSET #{rowIdx} LIMIT #{rowCnt}
+    </select>
+
+    <!-- 공지사항 목록 WHERE 조건 -->
+    <sql id="whereNotiList">
+        <if test="schTpCd != null and schTpCd != '' and schKwd != null and schKwd != ''">
+            <!-- 제목 -->
+            <if test='"01".equals(schTpCd)'>
+                AND nti.notice_title LIKE '%' || #{schKwd} || '%'
+            </if>
+
+            <!-- 내용 -->
+            <if test='"02".equals(schTpCd)'>
+                AND nti.notice_contents LIKE '%' || #{schKwd} || '%'
+            </if>
+
+            <!-- 제목/내용 -->
+            <if test='"03".equals(schTpCd)'>
+                AND (nti.notice_title LIKE '%' || #{schKwd} || '%'
+                     OR nti.notice_contents LIKE '%' || #{schKwd} || '%')
+            </if>
+        </if>
+    </sql>
+
+    <!-- 공지사항 조회수 더하기 수정 -->
+    <update id="updateNotiHitCntPlus" parameterType="co.kesti.smartcity.api.community.vo.CmntNotiVo">
+        UPDATE /* CommunityNoticeMapper.updateNotiHitCntPlus */
+               cmnt_notice
+           SET hit_cnt = hit_cnt + 1
+         WHERE notice_seq = #{noticeSeq}
+    </update>
+
+    <!-- 공지사항 추천수 더하기 수정 -->
+    <update id="updateNotiRcmdCntPlus" parameterType="co.kesti.smartcity.api.community.vo.CmntNotiVo">
+        UPDATE /* CommunityNoticeMapper.updateNotiRcmdCntPlus */
+               cmnt_notice
+           SET recmd_cnt = recmd_cnt + 1
+         WHERE notice_seq = #{noticeSeq}
+    </update>
+
+    <!-- 공지사항 추천 중복 건수 조회 -->
+    <select id="selectNotiRcmdDupCount" parameterType="co.kesti.smartcity.api.community.vo.CmntNotiVo" resultType="java.lang.Integer">
+        SELECT /* CommunityNoticeMapper.selectNotiRcmdDupCount */
+               COUNT(*) AS cnt
+          FROM cmnt_notice_recmd /* 공지사항추천TABLE */
+         WHERE notice_seq = #{noticeSeq}
+           AND mbr_id     = #{mbrId}
+    </select>
+
+    <!-- 공지사항 추천 등록 -->
+    <insert id="insertNotiRcmd" parameterType="co.kesti.smartcity.api.community.vo.CmntNotiVo">
+        INSERT /* CommunityNoticeMapper.insertNotiRcmd */
+          INTO cmnt_notice_recmd (
+               notice_seq   /* 공지사항일련번호 */
+             , mbr_id       /* 회원ID */
+             , cret_dt      /* 생성일시 */
+        ) VALUES (
+               #{noticeSeq} /* 공지사항일련번호 */
+             , #{mbrId}     /* 회원ID */
+             , NOW()        /* 생성일시 */
+        )
+    </insert>
+
+</mapper>

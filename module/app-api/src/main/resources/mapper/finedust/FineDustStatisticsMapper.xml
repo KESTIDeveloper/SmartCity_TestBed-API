@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="co.kesti.smartcity.api.finedust.mapper.FineDustStatisticsMapper">
+
+    <!--
+     * ==============================
+     * ### 미세먼지 > 측정값 통계 ###
+     * ==============================
+     * @author atom
+     * @since  2020.07.26
+    -->
+
+    <!-- 테스트 디바이스 목록 조회 -->
+    <select id="selectTestDevList" resultType="co.kesti.smartcity.api.finedust.vo.FineDustDevVo">
+        SELECT /* FineDustStatisticsMapper.selectTestDevList */
+               dev_id          /* 디바이스ID */
+             , dev_name        /* 디비이스이름 */
+             , FALSE AS act_yn /* 활성화여부 */
+          FROM dev_info /* 디바이스TABLE */
+         WHERE mbr_seq = #{mbrSeq}
+           AND test_dev_yn = TRUE
+         ORDER BY dev_id ASC
+    </select>
+
+    <!-- 비교 디바이스 목록 조회 -->
+    <select id="selectCmprDevList" resultType="co.kesti.smartcity.api.finedust.vo.FineDustDevVo">
+        SELECT /* FineDustStatisticsMapper.selectCmprDevList */
+               dev.dev_id      /* 디바이스ID */
+             , dev.dev_name    /* 디비이스이름 */
+             , FALSE AS act_yn /* 활성화여부 */
+          FROM dev_compare cpr /* 비교디바이스TABLE */
+    INNER JOIN dev_info dev /* 디바이스TABLE */
+            ON cpr.compare_dev_id = dev.dev_id
+         WHERE cpr.dev_id = #{devId}
+           AND cpr.use_yn = 'Y'
+         ORDER BY cpr.compare_order ASC
+    </select>
+
+    <!-- 디바이스 측정 목록 조회 -->
+    <select id="selectDevObsList" resultType="co.kesti.smartcity.api.finedust.vo.FineDustDevObsVo">
+        SELECT /* FineDustStatisticsMapper.selectDevObsList */
+               obs.dev_id                                                    /* 디바이스ID */
+             , obs.obs_item_id                                               /* 측정항목ID */
+             , CONCAT(cdt.dtl_cd_nm, '(', obs.unit_type, ')') AS obs_item_nm /* 측정항목명 */
+             , obs.unit_type                                                 /* 단위타입 */
+             , FALSE                                          AS act_yn      /* 활성화여부 */
+          FROM dev_obs_info obs /* 디바이스측정TABLE */
+    INNER JOIN cd_dtl cdt /* 코드상세TABLE */
+            ON cdt.cd_group_id = 'OBS'
+           AND obs.obs_item_id = cdt.dtl_cd
+           AND cdt.lang_cd     = 'KOR'
+         WHERE obs.dev_id = #{devId}
+           AND cdt.use_yn = 'Y'
+         ORDER BY cdt.indc_odrg ASC
+    </select>
+
+    <!-- 디바이스 측정 통계 목록 resultMap -->
+    <resultMap id="devObsStscListResultMap" type="co.kesti.smartcity.api.finedust.vo.FineDustDevObsStscVo">
+        <id     property="obsTime"   column="obs_time" />
+        <result property="obsItemNm" column="obs_item_nm" />
+        <collection property="dtlList" ofType="co.kesti.smartcity.api.finedust.vo.FineDustDevObsStscRowVo">
+            <id     property="devId"        column="dev_id" />
+            <result property="obsItemId"    column="obs_item_id" />
+            <result property="obsItemValue" column="obs_item_value" />
+        </collection>
+    </resultMap>
+
+    <!-- 디바이스 측정 통계 목록 조회 -->
+    <select id="selectDevObsStscList" parameterType="co.kesti.smartcity.api.finedust.vo.FineDustDevObsStscReqVo" resultMap="devObsStscListResultMap">
+         SELECT /* FineDustStatisticsMapper.selectDevObsStscList */
+                mst.obs_time                                      /* 측정시간 */
+              , mst.dev_id                                        /* 디바이스ID */
+              , mst.obs_item_id                                   /* 측정항목ID */
+              , #{obsItemNm}                    AS obs_item_nm    /* 측정항목명 */
+              , COALESCE(dtl.obs_item_value, 0) AS obs_item_value /* 측정항목값 */
+           FROM (
+                 SELECT std.dev_id                  /* 디바이스ID */
+                      , #{obsItemId} AS obs_item_id /* 측정항목ID */
+                      , std.obs_time                /* 측정시간 */
+                   FROM fn_get_stsc_std_list(#{stscDtmCd}, #{strDt}, #{endDt}, #{devDivVal}) std /* 통계기준목록TABLE */
+                ) mst
+LEFT OUTER JOIN (
+                 SELECT fir.dev_id                                                                /* 디바이스ID */
+                      , fir.obs_item_id                                                           /* 측정항목ID */
+                      , fir.obs_time                                                              /* 측정시간 */
+                        <choose>
+                            <!-- 평균 -->
+                            <when test='"STATCODE001".equals(stscItemCd)'>
+                      , CASE WHEN COALESCE(SUM(fir.obs_item_value), 0) > 0 THEN ROUND(SUM(fir.obs_item_value)::DECIMAL / COUNT(*), 2)
+                             ELSE 0
+                        END                                                     AS obs_item_value /* 측정항목값 */
+                            </when>
+                            <!-- 최대 -->
+                            <when test='"STATCODE002".equals(stscItemCd)'>
+                      , ROUND(COALESCE(MAX(fir.obs_item_value), 0)::DECIMAL, 2) AS obs_item_value /* 측정항목값 */
+                            </when>
+                            <!-- 최소 -->
+                            <otherwise>
+                      , ROUND(COALESCE(MIN(fir.obs_item_value), 0)::DECIMAL, 2) AS obs_item_value /* 측정항목값 */
+                            </otherwise>
+                        </choose>
+                   FROM (
+                         <include refid="includeObsItemList" />
+                        ) fir
+                  GROUP BY fir.dev_id, fir.obs_item_id, fir.obs_time
+                ) dtl
+             ON mst.dev_id      = dtl.dev_id
+            AND mst.obs_item_id = dtl.obs_item_id
+            AND mst.obs_time    = dtl.obs_time
+          ORDER BY mst.obs_time ASC
+    </select>
+
+    <!-- include 측정 항목 목록 조회 -->
+    <sql id="includeObsItemList">
+         SELECT /* FineDustStatisticsMapper.includeObsItemList */
+                obs.dev_id                                           /* 디바이스ID */
+              , obs.obs_item_id                                      /* 측정항목ID */
+                <choose>
+                    <!-- 시간 -->
+                    <when test='"HOUR".equals(stscDtmCd)'>
+              , TO_CHAR(itm.obs_time, 'YYYY.MM.DD HH24') AS obs_time /* 측정시간 */
+                    </when>
+                    <!-- 일 -->
+                    <when test='"DAY".equals(stscDtmCd)'>
+              , TO_CHAR(itm.obs_time, 'YYYY.MM.DD')      AS obs_time /* 측정시간 */
+                    </when>
+                    <!-- 월 -->
+                    <otherwise>
+              , TO_CHAR(itm.obs_time, 'YYYY.MM')         AS obs_time /* 측정시간 */
+                    </otherwise>
+                </choose>
+              , itm.obs_item_value                                   /* 측정항목값 */
+           FROM dev_obs_info obs /* 디바이스측정TABLE */
+     INNER JOIN dev_realtime_obs itm /* 디바이스실시간측정TABLE */
+             ON obs.dev_id      = itm.dev_id
+            AND obs.obs_item_id = itm.obs_item_id
+          WHERE obs.dev_id IN (
+                <foreach collection="devList" item="devId" separator="," open="" close="">
+                    #{devId}
+                </foreach>
+                )
+            AND obs.obs_item_id = #{obsItemId}
+            AND itm.obs_time BETWEEN TO_TIMESTAMP(#{strDt} || ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_TIMESTAMP(#{endDt} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+    </sql>
+
+</mapper>

@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="co.kesti.smartcity.api.community.mapper.CommunityForumMapper">
+
+    <!--
+     * =======================
+     * ### 커뮤니티 > 포럼 ###
+     * =======================
+     * @author atom
+     * @since  2020.07.20
+    -->
+
+    <!-- 포럼 그룹 정보 조회 -->
+    <select id="selectFrumGrpInfo" resultType="co.kesti.smartcity.api.community.vo.CmntFrumGrpVo">
+        SELECT /* CommunityForumMapper.selectFrumGrpInfo */
+               forum_group_seq      /* 포럼그룹일련번호 */
+             , forum_group_title    /* 포럼그룹주제 */
+             , forum_group_contents /* 포럼그룹내용 */
+             , forum_group_img_path /* 포럼그룹이미지경로 */
+          FROM cmnt_forum_group /* 포럼그룹TABLE */
+         WHERE forum_group_seq = #{forumGroupSeq}
+    </select>
+
+    <!-- 포럼 그룹 목록 조회 -->
+    <select id="selectFrumGrpList" resultType="co.kesti.smartcity.api.community.vo.CmntFrumGrpVo">
+        SELECT /* CommunityForumMapper.selectFrumGrpList */
+               forum_group_seq      /* 포럼그룹일련번호 */
+             , forum_group_title    /* 포럼그룹주제 */
+             , forum_group_contents /* 포럼그룹내용 */
+             , forum_group_img_path /* 포럼그룹이미지경로 */
+          FROM cmnt_forum_group /* 포럼그룹TABLE */
+         WHERE del_yn = 'N'
+         ORDER BY forum_group_seq ASC
+    </select>
+
+    <!-- 포럼 공지 목록 조회 -->
+    <select id="selectFrumNotiList" resultType="co.kesti.smartcity.api.community.vo.CmntFrumVo">
+        SELECT /* CommunityForumMapper.selectFrumNotiList */
+               forum_group_seq                            /* 포럼그룹일련번호 */
+             , forum_seq                                  /* 포럼일련번호 */
+             , forum_title                                /* 포럼주제 */
+             , forum_contents                             /* 포럼내용 */
+             , attached_file_path                         /* 첨부파일경로 */
+             , hit_cnt                                    /* 조회수 */
+             , recmd_cnt                                  /* 추천수 */
+             , TO_CHAR(cret_dt, 'YYYY.MM.DD') AS cret_dt  /* 생성일시 */
+             , fn_mask(cretr_id)              AS cretr_id /* 생성자ID */
+          FROM cmnt_forum /* 포럼TABLE */
+         WHERE del_yn = 'N'
+         ORDER BY ${sortCol} DESC, forum_seq DESC
+         LIMIT 10
+    </select>
+
+    <!-- 포럼 정보 조회 -->
+    <select id="selectFrumInfo" resultType="co.kesti.smartcity.api.community.vo.CmntFrumVo">
+        SELECT /* CommunityForumMapper.selectFrumInfo */
+               forum_group_seq                                 /* 포럼그룹일련번호 */
+             , forum_seq                                       /* 포럼일련번호 */
+             , forum_title                                     /* 포럼주제 */
+             , forum_contents                                  /* 포럼내용 */
+             , attached_file_path                              /* 첨부파일경로 */
+             , hit_cnt                                         /* 조회수 */
+             , recmd_cnt                                       /* 추천수 */
+             , TO_CHAR(cret_dt, 'YYYY.MM.DD') AS cret_dt       /* 생성일시 */
+             , TO_CHAR(cret_dt, 'HH24:MI')    AS cret_tm       /* 생성시간 */
+             , cretr_id                                        /* 생성자ID */
+             , fn_mask(cretr_id)              AS cretr_mask_id /* 생성자마스킹ID */
+          FROM cmnt_forum /* 포럼TABLE */
+         WHERE forum_group_seq = #{forumGroupSeq}
+           AND forum_seq       = #{forumSeq}
+    </select>
+
+    <!-- 포럼 건수 조회 -->
+    <select id="selectFrumCount" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumReqVo" resultType="java.lang.Integer">
+        SELECT /* CommunityForumMapper.selectFrumCount */
+               COUNT(*) AS cnt
+          FROM cmnt_forum frm /* 포럼TABLE */
+         WHERE frm.forum_group_seq = #{forumGroupSeq}
+           AND frm.del_yn          = 'N'
+
+        <!-- WHERE 조건 -->
+        <include refid="whereFrumList" />
+    </select>
+
+    <!-- 포럼 목록 조회 -->
+    <select id="selectFrumList" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumReqVo" resultType="co.kesti.smartcity.api.community.vo.CmntFrumVo">
+        SELECT /* CommunityForumMapper.selectFrumList */
+               fir.forum_group_seq    /* 포럼그룹일련번호 */
+             , fir.forum_seq          /* 포럼일련번호 */
+             , fir.forum_title        /* 포럼주제 */
+             , fir.forum_contents     /* 포럼내용 */
+             , fir.attached_file_path /* 첨부파일경로 */
+             , fir.hit_cnt            /* 조회수 */
+             , fir.recmd_cnt          /* 추천수 */
+             , fir.cret_dt            /* 생성일시 */
+             , fir.cretr_id           /* 생성자ID */
+             , (
+                SELECT COUNT(*)
+                  FROM cmnt_forum_comment cmt /* 포럼코멘트TABLE */
+                 WHERE cmt.forum_group_seq = fir.forum_group_seq
+                   AND cmt.forum_seq       = fir.forum_seq
+                   AND cmt.del_yn          = 'N'
+               ) AS cmt_cnt           /* 코멘트수 */
+          FROM (
+                SELECT frm.forum_group_seq                            /* 포럼그룹일련번호 */
+                     , frm.forum_seq                                  /* 포럼일련번호 */
+                     , frm.forum_title                                /* 포럼주제 */
+                     , frm.forum_contents                             /* 포럼내용 */
+                     , frm.attached_file_path                         /* 첨부파일경로 */
+                     , frm.hit_cnt                                    /* 조회수 */
+                     , frm.recmd_cnt                                  /* 추천수 */
+                     , TO_CHAR(frm.cret_dt, 'YYYY.MM.DD') AS cret_dt  /* 생성일시 */
+                     , fn_mask(frm.cretr_id)              AS cretr_id /* 생성자ID */
+                  FROM cmnt_forum frm /* 포럼TABLE */
+                 WHERE frm.forum_group_seq = #{forumGroupSeq}
+                   AND frm.del_yn          = 'N'
+
+                <!-- WHERE 조건 -->
+                <include refid="whereFrumList" />
+
+                 ORDER BY frm.forum_seq DESC
+                OFFSET #{rowIdx} LIMIT #{rowCnt}
+               ) fir
+    </select>
+
+    <!-- 포럼 목록 WHERE 조건 -->
+    <sql id="whereFrumList">
+        <if test="schTpCd != null and schTpCd != '' and schKwd != null and schKwd != ''">
+            <!-- 제목 -->
+            <if test='"01".equals(schTpCd)'>
+                AND frm.forum_title LIKE '%' || #{schKwd} || '%'
+            </if>
+
+            <!-- 내용 -->
+            <if test='"02".equals(schTpCd)'>
+                AND frm.forum_contents LIKE '%' || #{schKwd} || '%'
+            </if>
+
+            <!-- 제목/내용 -->
+            <if test='"03".equals(schTpCd)'>
+                AND (frm.forum_title LIKE '%' || #{schKwd} || '%'
+                     OR frm.forum_contents LIKE '%' || #{schKwd} || '%')
+            </if>
+        </if>
+    </sql>
+
+    <!-- 포럼 등록 -->
+    <insert id="insertFrum" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumVo">
+        INSERT /* CommunityForumMapper.insertFrum */
+          INTO cmnt_forum (
+               forum_group_seq     /* 포럼그룹일련번호 */
+             , forum_seq           /* 포럼일련번호 */
+             , forum_title         /* 포럼주제 */
+             , forum_contents      /* 포럼내용 */
+             , attached_file_path  /* 첨부파일경로 */
+             , hit_cnt             /* 조회수 */
+             , recmd_cnt           /* 추천수 */
+             , del_yn              /* 삭제여부 */
+             , cret_dt             /* 생성일시 */
+             , cretr_id            /* 생성자ID */
+             , amd_dt              /* 수정일시 */
+             , amdr_id             /* 수정자ID */
+        ) VALUES (
+               #{forumGroupSeq}    /* 포럼그룹일련번호 */
+             , DEFAULT             /* 포럼일련번호 */
+             , #{forumTitle}       /* 포럼주제 */
+             , #{forumContents}    /* 포럼내용 */
+             , #{attachedFilePath} /* 첨부파일경로 */
+             , 0                   /* 조회수 */
+             , 0                   /* 추천수 */
+             , 'N'                 /* 삭제여부 */
+             , NOW()               /* 생성일시 */
+             , #{mbrId}            /* 생성자ID */
+             , NOW()               /* 수정일시 */
+             , #{mbrId}            /* 수정자ID */
+        )
+    </insert>
+
+    <!-- 포럼 수정 -->
+    <update id="updateFrum" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumVo">
+        UPDATE /* CommunityForumMapper.updateFrum */
+               cmnt_forum
+           SET amd_dt             = NOW()               /* 수정일시 */
+             , amdr_id            = #{mbrId}            /* 수정자ID */
+             <if test="forumTitle != null">
+             , forum_title        = #{forumTitle}       /* 포럼주제 */
+             </if>
+             <if test="forumContents != null">
+             , forum_contents     = #{forumContents}    /* 포럼내용 */
+             </if>
+             <if test="attachedFilePath != null">
+             , attached_file_path = #{attachedFilePath} /* 첨부파일경로 */
+             </if>
+         WHERE forum_group_seq = #{forumGroupSeq}
+           AND forum_seq       = #{forumSeq}
+    </update>
+
+    <!-- 포럼 삭제 -->
+    <update id="deleteFrum" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumVo">
+        UPDATE /* CommunityForumMapper.deleteFrum */
+               cmnt_forum
+           SET del_yn  = 'Y'      /* 삭제여부 */
+             , amd_dt  = NOW()    /* 수정일시 */
+             , amdr_id = #{mbrId} /* 수정자ID */
+         WHERE forum_group_seq = #{forumGroupSeq}
+           AND forum_seq       = #{forumSeq}
+    </update>
+
+    <!-- 포럼 조회수 더하기 수정 -->
+    <update id="updateFrumHitCntPlus" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumVo">
+        UPDATE /* CommunityForumMapper.updateFrumHitCntPlus */
+               cmnt_forum
+           SET hit_cnt = hit_cnt + 1
+         WHERE forum_group_seq = #{forumGroupSeq}
+           AND forum_seq       = #{forumSeq}
+    </update>
+
+    <!-- 포럼 추천수 더하기 수정 -->
+    <update id="updateFrumRcmdCntPlus" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumVo">
+        UPDATE /* CommunityForumMapper.updateFrumRcmdCntPlus */
+               cmnt_forum
+           SET recmd_cnt = recmd_cnt + 1
+         WHERE forum_group_seq = #{forumGroupSeq}
+           AND forum_seq       = #{forumSeq}
+    </update>
+
+    <!-- 포럼 추천 중복 건수 조회 -->
+    <select id="selectFrumRcmdDupCount" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumVo" resultType="java.lang.Integer">
+        SELECT /* CommunityForumMapper.selectFrumRcmdDupCount */
+               COUNT(*) AS cnt
+          FROM cmnt_forum_recmd /* 포럼추천TABLE */
+         WHERE forum_group_seq = #{forumGroupSeq}
+           AND forum_seq       = #{forumSeq}
+           AND mbr_id          = #{mbrId}
+    </select>
+
+    <!-- 포럼 추천 등록 -->
+    <insert id="insertFrumRcmd" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumVo">
+        INSERT /* CommunityForumMapper.insertFrumRcmd */
+          INTO cmnt_forum_recmd (
+               forum_group_seq  /* 포럼그룹일련번호 */
+             , forum_seq        /* 포럼일련번호 */
+             , mbr_id           /* 회원ID */
+             , cret_dt          /* 생성일시 */
+        ) VALUES (
+               #{forumGroupSeq} /* 포럼그룹일련번호 */
+             , #{forumSeq}      /* 포럼일련번호 */
+             , #{mbrId}         /* 회원ID */
+             , NOW()            /* 생성일시 */
+        )
+    </insert>
+
+    <!-- 포럼 코멘트 목록 조회 -->
+    <select id="selectFrumCmtList" resultType="co.kesti.smartcity.api.community.vo.CmntFrumCmtVo">
+        SELECT /* CommunityForumMapper.selectFrumCmtList */
+               cmt.forum_comment_seq                                     /* 포럼댓글일련번호 */
+             , cmt.forum_group_seq                                       /* 포럼그룹일련번호 */
+             , cmt.forum_seq                                             /* 포럼일련번호 */
+             , cmt.forum_comment_parent                                  /* 부모댓글 */
+             , cmt.forum_comment_content                                 /* 댓글내용 */
+             , cmt.like_cnt                                              /* 좋아요수 */
+             , cmt.dislike_cnt                                           /* 싫어요수 */
+             , cmt.ip_adress                                             /* 아이피주소 */
+             , TO_CHAR(cmt.cret_dt, 'YYYY.MM.DD HH24:MI:SS') AS cret_dt  /* 생성일시 */
+             , fn_mask(cmt.cretr_id)                         AS cretr_id /* 생성자ID */
+          FROM cmnt_forum_comment cmt /* 포럼코멘트TABLE */
+         WHERE cmt.forum_group_seq = #{forumGroupSeq}
+           AND cmt.forum_seq       = #{forumSeq}
+           AND cmt.del_yn          = 'N'
+         ORDER BY cmt.forum_comment_seq ASC
+    </select>
+
+    <!-- 포럼 코멘트 등록 -->
+    <insert id="insertFrumCmt" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumCmtVo">
+        INSERT /* CommunityForumMapper.insertFrum */
+          INTO cmnt_forum_comment (
+               forum_comment_seq      /* 포럼댓글일련번호 */
+             , forum_group_seq        /* 포럼그룹일련번호 */
+             , forum_seq              /* 포럼일련번호 */
+             , forum_comment_parent   /* 부모댓글 */
+             , forum_comment_content  /* 댓글내용 */
+             , like_cnt               /* 좋아요 수 */
+             , dislike_cnt            /* 싫어요 수 */
+             , ip_adress              /* 아이피주소 */
+             , del_yn                 /* 삭제여부 */
+             , cret_dt                /* 생성일시 */
+             , cretr_id               /* 생성자ID */
+             , amd_dt                 /* 수정일시 */
+             , amdr_id                /* 수정자ID */
+        ) VALUES (
+               DEFAULT                /* 포럼댓글일련번호 */
+             , #{forumGroupSeq}       /* 포럼그룹일련번호 */
+             , #{forumSeq}            /* 포럼일련번호 */
+             , 0                      /* 부모댓글 */
+             , #{forumCommentContent} /* 댓글내용 */
+             , 0                      /* 조회수 */
+             , 0                      /* 추천수 */
+             , #{ipAdress}            /* 아이피주소 */
+             , 'N'                    /* 삭제여부 */
+             , NOW()                  /* 생성일시 */
+             , #{mbrId}               /* 생성자ID */
+             , NOW()                  /* 수정일시 */
+             , #{mbrId}               /* 수정자ID */
+        )
+    </insert>
+
+</mapper>
