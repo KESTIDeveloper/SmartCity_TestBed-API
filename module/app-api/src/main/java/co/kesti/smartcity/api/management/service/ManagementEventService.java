@@ -43,9 +43,21 @@ public interface ManagementEventService {
     public void saveEvt(MgmtEvtDtlVo param);
 
     /**
-     * 이벤트 목록 삭제
+     * 이벤트 상태 여부 수정
      * @param param
      */
-    public void deleteEvtList(MgmtEvtDelReqVo param);
+    public void updateEvtStatYn(MgmtEvtVo param);
+
+    /**
+     * 이벤트 삭제
+     * @param param
+     */
+    public void deleteEvt(MgmtEvtDelReqVo param);
+
+    /**
+     * 이벤트 멀티 삭제
+     * @param param
+     */
+    public void deleteEvtMulti(MgmtEvtDelReqVo param);
 
 }

@@ -16,7 +16,7 @@
 
 # 개발 환경 설정
 1. IntelliJ Community 버전 다운로드: https://www.jetbrains.com/ko-kr/idea/download
-2. Get from Version Control: https://KESTIYong@bitbucket.org/KESTIDev/smartcity_api.git 입력
+2. Get from Version Control: https://github.com/KESTIDeveloper/SmartCity_AirMap-API_Sample.gitsmartcity_api.git 입력
 
 
 # 빌드 및 구동 방법 

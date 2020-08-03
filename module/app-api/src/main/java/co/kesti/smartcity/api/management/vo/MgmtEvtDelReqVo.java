@@ -15,6 +15,9 @@ public class MgmtEvtDelReqVo extends BaseParamVo {
 
     private static final long serialVersionUID = 1L;
 
+    /* 이벤트ID */
+    private String evntId;
+
     /* 이벤트목록 */
     private List<String> evtList;
 }

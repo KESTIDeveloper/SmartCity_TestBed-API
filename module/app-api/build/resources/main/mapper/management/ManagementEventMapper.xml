@@ -20,9 +20,11 @@
              , evt.evnt_occr_div                                /* 이벤트발생구분 */
              , evt.evnt_occr_cond_div                           /* 이벤트발생조건구분 */
              , evt.evnt_occr_cond_val                           /* 이벤트발생조건값 */
+             , evt.and_or_code                                  /* and/or조건 */
              , fn_decrypt(evt.recptn_phon_no) AS recptn_phon_no /* 수신전화번호 */
              , evt.sms_msg                                      /* SMS메세지 */
              , evt.mbr_seq                                      /* 회원순번 */
+             , evt.status                                       /* 상태 */
              , (
                 SELECT dev.dev_name
                   FROM dev_info dev /* 디바이스TABLE */
@@ -30,9 +32,7 @@
                )                              AS dev_name       /* 디바이스이름 */
           FROM evnt_info evt /* 이벤트TABLE */
          WHERE evt.evnt_id = #{evntId}
-        <if test="mbrSeq != null">
            AND evt.mbr_seq = #{mbrSeq}
-        </if>
     </select>
 
     <!-- 이벤트 건수 조회 -->
@@ -52,6 +52,7 @@
              , evt.dev_id        /* 디바이스ID */
              , dev.dev_name      /* 디바이스ID */
              , evt.evnt_occr_div /* 이벤트발생구분 */
+             , evt.status        /* 상태 */
              , FALSE AS chk_yn   /* 체크여부 */
           FROM evnt_info evt /* 이벤트TABLE */
     INNER JOIN dev_info dev /* 디바이스TABLE */
@@ -64,6 +65,9 @@
 
     <!-- 이벤트 등록 -->
     <insert id="insertEvt" parameterType="co.kesti.smartcity.api.management.vo.MgmtEvtVo">
+        <selectKey keyProperty="evntId" resultType="java.lang.String" order="BEFORE">
+            SELECT TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || NEXTVAL('evnt_info_seq')
+        </selectKey>
         INSERT /* ManagementEventMapper.insertEvt */
           INTO evnt_info (
                evnt_id                     /* 이벤트ID */
@@ -135,6 +139,28 @@
          WHERE evnt_id = #{evntId}
     </update>
 
+    <!-- 이벤트 상태 여부 수정 -->
+    <update id="updateEvtStatYn" parameterType="co.kesti.smartcity.api.management.vo.MgmtEvtVo">
+        UPDATE /* ManagementEventMapper.updateEvtStatYn */
+               evnt_info
+           SET status  = #{status} /* 상태 */
+             , amd_dt  = NOW()     /* 수정일시 */
+             , amdr_id = #{mbrId}  /* 수정자ID */
+         WHERE evnt_id = #{evntId}
+           AND mbr_seq = #{mbrSeq}
+    </update>
+
+    <!-- 이벤트 삭제 -->
+    <update id="deleteEvt" parameterType="co.kesti.smartcity.api.management.vo.MgmtEvtDelReqVo">
+        UPDATE /* ManagementEventMapper.deleteEvtMulti */
+               evnt_info
+           SET del_yn  = 'Y'      /* 삭제여부 */
+             , amd_dt  = NOW()    /* 수정일시 */
+             , amdr_id = #{mbrId} /* 수정자ID */
+         WHERE evnt_id = #{evntId}
+           AND mbr_seq = #{mbrSeq}
+    </update>
+
     <!-- 이벤트 멀티 삭제 -->
     <update id="deleteEvtMulti" parameterType="co.kesti.smartcity.api.management.vo.MgmtEvtDelReqVo">
         UPDATE /* ManagementEventMapper.deleteEvtMulti */
@@ -143,7 +169,7 @@
              , amd_dt  = NOW()    /* 수정일시 */
              , amdr_id = #{mbrId} /* 수정자ID */
          WHERE evnt_id IN (
-               <foreach collection="evtList" item="evtList" separator="," open="" close="">
+               <foreach collection="evtList" item="evtId" separator="," open="" close="">
                    #{evtId}
                </foreach>
                )
@@ -153,14 +179,21 @@
     <!-- 이벤트 측정 목록 조회 -->
     <select id="selectEvtObsList" resultType="co.kesti.smartcity.api.management.vo.MgmtEvtObsVo">
         SELECT /* ManagementEventMapper.selectEvtObsList */
-               evnt_id       /* 이벤트ID */
-             , evnt_obs_seq  /* 이벤트측정순번 */
-             , obs_item_id   /* 측정항목ID */
-             , compare_code  /* 비교코드 */
-             , compare_value /* 비교값 */
-          FROM evnt_obs_info /* 이벤트측정TABLE */
-         WHERE evnt_id = #{evntId}
-         ORDER BY evnt_obs_seq ASC
+               eob.evnt_id                                                                               /* 이벤트ID */
+             , eob.evnt_obs_seq                                                                          /* 이벤트측정순번 */
+             , eob.obs_item_id                                                                           /* 측정항목ID */
+             , CONCAT(fn_get_cd_dtl_nm('OBS', eob.obs_item_id), '(', obs.unit_type, ')') AS obs_item_nm  /* 측정항목명 */
+             , eob.compare_code                                                                          /* 비교코드 */
+             , fn_get_cd_dtl_nm('COMPCODE', eob.compare_code)                            AS compare_name /* 비교명 */
+             , eob.compare_value                                                                         /* 비교값 */
+          FROM evnt_obs_info eob /* 이벤트측정TABLE */
+    INNER JOIN evnt_info evt /* 이벤트TABLE */
+            ON eob.evnt_id = evt.evnt_id
+    INNER JOIN dev_obs_info obs /* 디바이스측정TABLE */
+            ON evt.dev_id      = obs.dev_id
+           AND eob.obs_item_id = obs.obs_item_id
+         WHERE eob.evnt_id = #{evntId}
+         ORDER BY eob.evnt_obs_seq ASC
     </select>
 
     <!-- 이벤트 측정 등록 -->

@@ -22,10 +22,16 @@ public class MgmtEvtObsVo extends BaseVo {
     /* 측정항목ID */
     private String obsItemId;
 
+    /* 측정항목명 */
+    private String obsItemNm;
+
     /* 비교코드 */
     private String compareCode;
 
+    /* 비교명 */
+    private String compareName;
+
     /* 비교값 */
-    private String compareValue;
+    private Integer compareValue;
 
 }

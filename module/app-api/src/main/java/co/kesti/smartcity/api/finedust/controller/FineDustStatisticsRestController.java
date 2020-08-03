@@ -5,24 +5,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import co.kesti.smartcity.api.finedust.service.FineDustStatisticsService;
 import co.kesti.smartcity.api.finedust.vo.FineDustDevObsStscReqVo;
 import co.kesti.smartcity.api.finedust.vo.FineDustDevObsStscVo;
-import co.kesti.smartcity.api.finedust.vo.FineDustDevObsVo;
-import co.kesti.smartcity.api.finedust.vo.FineDustDevVo;
+import co.kesti.smartcity.api.finedust.vo.FineDustDevStatReqVo;
+import co.kesti.smartcity.api.finedust.vo.FineDustDevStatVo;
 import co.kesti.smartcity.define.Define;
 import co.kesti.smartcity.model.response.ApiResponse;
 
 /**
- * 미세먼지 > 측정값 통계 컨트롤러
+ * 미세먼지 > 통계 컨트롤러
  * @author atom
  * @since 2020.07.26
  */
@@ -32,42 +30,6 @@ public class FineDustStatisticsRestController {
 
     @Autowired
     private FineDustStatisticsService fineDustStatisticsService;
-
-    /**
-     * 테스트 디바이스 목록 조회
-     * @param mbrSeq
-     * @return
-     */
-    @PostMapping("/selectTestDevList")
-    public ApiResponse<?> selectTestDevList(@RequestParam(value="mbrSeq", required=true) Long mbrSeq) {
-        List<FineDustDevVo> resList = fineDustStatisticsService.selectTestDevList(mbrSeq);
-
-        return ApiResponse.ok(resList);
-    }
-
-    /**
-     * 비교 디바이스 목록 조회
-     * @param devId
-     * @return
-     */
-    @GetMapping("/selectCmprDevList")
-    public ApiResponse<?> selectCmprDevList(@RequestParam(value="devId", required=true) String devId) {
-        List<FineDustDevVo> resList = fineDustStatisticsService.selectCmprDevList(devId);
-
-        return ApiResponse.ok(resList);
-    }
-
-    /**
-     * 디바이스 측정 목록 조회
-     * @param devId
-     * @return
-     */
-    @GetMapping("/selectDevObsList")
-    public ApiResponse<?> selectDevObsList(@RequestParam(value="devId", required=true) String devId) {
-        List<FineDustDevObsVo> resList = fineDustStatisticsService.selectDevObsList(devId);
-
-        return ApiResponse.ok(resList);
-    }
 
     /**
      * 디바이스 측정 통계 목록 조회
@@ -94,6 +56,18 @@ public class FineDustStatisticsRestController {
         resultMap.put(Define.EXCEL_BODY_LIST, param.get(Define.EXCEL_BODY_LIST));
 
         return new ModelAndView(Define.EXCEL_VIEW, resultMap);
+    }
+
+    /**
+     * 디바이스 상태 정보 조회
+     * @param param
+     * @return
+     */
+    @PostMapping("/selectDevStatInfo")
+    public ApiResponse<?> selectDevStatInfo(FineDustDevStatReqVo param) {
+        FineDustDevStatVo resInfo = fineDustStatisticsService.selectDevStatInfo(param);
+
+        return ApiResponse.ok(resInfo);
     }
 
 }

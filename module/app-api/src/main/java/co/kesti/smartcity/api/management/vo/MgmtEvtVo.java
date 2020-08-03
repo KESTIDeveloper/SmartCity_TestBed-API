@@ -40,7 +40,7 @@ public class MgmtEvtVo extends BaseParamVo {
     /* SMS메세지 */
     private String smsMsg;
 
-    /* 회원일련번호 */
+    /* 회원순번 */
     private Long mbrSeq;
 
     /* 상태 */

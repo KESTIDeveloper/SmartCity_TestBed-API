@@ -14,7 +14,7 @@
     <!-- 자료실 정보 조회 -->
     <select id="selectUpldInfo" resultType="co.kesti.smartcity.api.community.vo.CmntUpldVo">
         SELECT /* CommunityUploadMapper.selectUpldInfo */
-               upload_seq                                 /* 자료실일련번호 */
+               upload_seq                                 /* 자료실순번 */
              , upload_title                               /* 자료실주제 */
              , upload_contents                            /* 자료실내용 */
              , attached_file_path                         /* 첨부파일경로 */
@@ -30,7 +30,7 @@
     <!-- 자료실 이전 정보 조회 -->
     <select id="selectUpldPrevInfo" resultType="co.kesti.smartcity.api.community.vo.CmntUpldVo">
         SELECT /* CommunityUploadMapper.selectUpldPrevInfo */
-               upload_seq   /* 자료실일련번호 */
+               upload_seq   /* 자료실순번 */
              , upload_title /* 자료실주제 */
           FROM cmnt_upload /* 자료실TABLE */
          WHERE upload_seq > #{uploadSeq}
@@ -42,7 +42,7 @@
     <!-- 자료실 다음 정보 조회 -->
     <select id="selectUpldNextInfo" resultType="co.kesti.smartcity.api.community.vo.CmntUpldVo">
         SELECT /* CommunityUploadMapper.selectUpldNextInfo */
-               upload_seq   /* 자료실일련번호 */
+               upload_seq   /* 자료실순번 */
              , upload_title /* 자료실주제 */
           FROM cmnt_upload /* 자료실TABLE */
         <![CDATA[
@@ -67,7 +67,7 @@
     <!-- 자료실 목록 조회 -->
     <select id="selectUpldList" parameterType="co.kesti.smartcity.api.community.vo.CmntUpldReqVo" resultType="co.kesti.smartcity.api.community.vo.CmntUpldVo">
         SELECT /* CommunityUploadMapper.selectUpldList */
-               upl.upload_seq                                /* 자료실일련번호 */
+               upl.upload_seq                                /* 자료실순번 */
              , upl.upload_title                              /* 자료실주제 */
              , upl.upload_contents                           /* 자료실내용 */
              , upl.attached_file_path                        /* 첨부파일경로 */

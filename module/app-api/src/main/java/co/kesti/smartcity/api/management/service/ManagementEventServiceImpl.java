@@ -1,6 +1,5 @@
 package co.kesti.smartcity.api.management.service;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +58,7 @@ public class ManagementEventServiceImpl implements ManagementEventService {
     /**
      * 이벤트 읽기 정보 조회
      */
+    @Override
     public MgmtEvtReadVo selectEvtReadInfo(MgmtEvtVo param) {
         // 회원 유효성 체크
         if (param.getMbrSeq() == null) {
@@ -139,42 +139,40 @@ public class ManagementEventServiceImpl implements ManagementEventService {
             throw new UserException("이벤트정보가 존재하지 않습니다.");
         }
 
-        // 이벤트ID
-        String evntId = evtVo.getEvntId();
-
-        // 이벤트 정보 조회
-        MgmtEvtVo evtInfo = managementEventMapper.selectEvtInfo(evntId, null);
-
         // 이벤트발생구분 - 디바이스연결상태
         if (Define.CODE_A.equals(evtVo.getEvntOccrDiv())) {
             evtVo.setAndOrCode(Define.EMPTY);
             param.setObsList(null);
+
+        // 디바이스측정
+        } else {
+            evtVo.setEvntOccrCondDiv(Define.EMPTY);
+            evtVo.setEvntOccrCondVal(Define.EMPTY);
         }
 
         // 회원정보
         evtVo.setMbrSeq(param.getMbrSeq());
         evtVo.setMbrId(param.getMbrId());
 
+        // 이벤트ID
+        String evntId = evtVo.getEvntId();
+
         // 등록
-        if (evtInfo == null) {
-            // LocalDateTime now = LocalDateTime.now();
-            // long milliSeconds = Timestamp.valueOf(now).getTime();
-            // Instant.now().getEpochSecond();
-            // Instant.now().toEpochMilli();
+        if (Define.Mode.CREATE.equals(param.getMode())) {
+            // 이벤트 등록
+            evtVo.setStatus(Define.CODE_ON);
+            managementEventMapper.insertEvt(evtVo);
 
             // 이벤트ID
-            evntId = Long.toString(Instant.now().toEpochMilli());
-            evtVo.setEvntId(evntId);
-
-            // 이벤트 등록
-            evtVo.setStatus(Define.CODE_OFF);
-            managementEventMapper.insertEvt(evtVo);
+            evntId = evtVo.getEvntId();
 
         // 수정
         } else {
-            // 회원 체크
-            if (!param.getMbrSeq().equals(evtInfo.getMbrSeq())) {
-                throw new UserException("본인글만 수정할 수 있습니다.");
+            // 이벤트 정보 조회
+            MgmtEvtVo evtInfo = managementEventMapper.selectEvtInfo(evntId, param.getMbrSeq());
+
+            if (evtInfo == null) {
+                throw new UserException("이벤트정보가 존재하지 않습니다.");
             }
 
             // 이벤트 수정
@@ -197,11 +195,41 @@ public class ManagementEventServiceImpl implements ManagementEventService {
     }
 
     /**
+     * 이벤트 상태 여부 수정
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updateEvtStatYn(MgmtEvtVo param) {
+        // 회원 유효성 체크
+        if (param.getMbrSeq() == null || StringUtils.isBlank(param.getMbrId())) {
+            throw new UserException("회원정보는 필수 항목입니다.");
+        }
+
+        // 이벤트 상태 여부 수정
+        managementEventMapper.updateEvtStatYn(param);
+    }
+
+    /**
      * 이벤트 삭제
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void deleteEvtList(MgmtEvtDelReqVo param) {
+    public void deleteEvt(MgmtEvtDelReqVo param) {
+        // 회원 유효성 체크
+        if (param.getMbrSeq() == null || StringUtils.isBlank(param.getMbrId())) {
+            throw new UserException("회원정보는 필수 항목입니다.");
+        }
+
+        // 이벤트 삭제
+        managementEventMapper.deleteEvt(param);
+    }
+
+    /**
+     * 이벤트 멀티 삭제
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void deleteEvtMulti(MgmtEvtDelReqVo param) {
         // 회원 유효성 체크
         if (param.getMbrSeq() == null || StringUtils.isBlank(param.getMbrId())) {
             throw new UserException("회원정보는 필수 항목입니다.");

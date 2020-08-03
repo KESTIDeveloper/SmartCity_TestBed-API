@@ -13,7 +13,7 @@ public class ComMbrVo extends BaseVo {
 
     private static final long serialVersionUID = 1L;
 
-    /* 회원일련번호 */
+    /* 회원순번 */
     private Long mbrSeq;
 
     /* 회원ID */

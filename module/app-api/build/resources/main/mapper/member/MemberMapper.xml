@@ -14,7 +14,7 @@
     <!-- 회원 정보 조회 -->
     <select id="selectMbrInfo" resultType="co.kesti.smartcity.api.member.vo.ComMbrVo">
         SELECT /* MemberMapper.selectMbrInfo */
-               mbr_seq                          /* 회원일련번호 */
+               mbr_seq                          /* 회원순번 */
              , mbr_id                           /* 회원ID */
              , user_nm                          /* 사용자명 */
              , mbr_pwd                          /* 비밀번호 */
@@ -48,7 +48,7 @@
     <insert id="insertMbr" parameterType="co.kesti.smartcity.api.member.vo.ComMbrVo">
         INSERT /* MemberMapper.insertMbr */
           INTO com_mbr (
-               mbr_seq                /* 회원일련번호 */
+               mbr_seq                /* 회원순번 */
              , mbr_id                 /* 회원ID */
              , user_nm                /* 사용자명 */
              , mbr_pwd                /* 비밀번호 */
@@ -70,7 +70,7 @@
              , amd_dt                 /* 수정일시 */
              , amdr_id                /* 수정자ID */
         ) VALUES (
-               DEFAULT                /* 회원일련번호 */
+               DEFAULT                /* 회원순번 */
              , #{mbrId}               /* 회원ID */
              , #{userNm}              /* 사용자명 */
              , #{mbrPwd}              /* 비밀번호 */

@@ -13,7 +13,7 @@ public class CmntUpldVo extends BaseParamVo {
 
     private static final long serialVersionUID = 1L;
 
-    /* 자료실일련번호 */
+    /* 자료실순번 */
     private Long uploadSeq;
 
     /* 자료실주제 */

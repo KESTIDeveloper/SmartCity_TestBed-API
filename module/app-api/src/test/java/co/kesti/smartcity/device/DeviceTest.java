@@ -4,6 +4,8 @@ import co.kesti.smartcity.entity.CdDtl;
 import co.kesti.smartcity.entity.CmntPrdt;
 import co.kesti.smartcity.entity.DevInfo;
 import co.kesti.smartcity.entity.DevRealtimeObs;
+import co.kesti.smartcity.entity.custom.DevInfoStatsProjection;
+import co.kesti.smartcity.model.DevStats;
 import co.kesti.smartcity.model.request.RequestCmntPrdt;
 import co.kesti.smartcity.repository.CmntPrdtRepository;
 import co.kesti.smartcity.repository.DevInfoRepository;
@@ -11,6 +13,7 @@ import co.kesti.smartcity.repository.DevObsInfoRepository;
 import co.kesti.smartcity.repository.DevRealtimeObsRepository;
 import co.kesti.smartcity.service.CdDtlService;
 import co.kesti.smartcity.service.CmntPrdtService;
+import co.kesti.smartcity.service.DevMonitorService;
 import co.kesti.smartcity.service.DevRealtimeObsService;
 import co.kesti.smartcity.util.JsonUtils;
 import co.kesti.smartcity.util.StreamUtil;
@@ -44,6 +47,9 @@ class DeviceTest {
     @Autowired
     private DevRealtimeObsService devRealtimeObsService;
 
+    @Autowired
+    private DevMonitorService devMonitorService;
+
 
     @Test
     public void select() {
@@ -67,5 +73,11 @@ class DeviceTest {
 //            devInfoRepository.findById("ST0006").ifPresent(devInfo -> {
 //            log.info("{}", JsonUtils.toPrettyString(devInfo));
 //        });
+    }
+
+    @Test
+    public void stats() {
+        DevStats res = devMonitorService.getDevStats();
+        log.info("{}", JsonUtils.toPrettyString(res));
     }
 }

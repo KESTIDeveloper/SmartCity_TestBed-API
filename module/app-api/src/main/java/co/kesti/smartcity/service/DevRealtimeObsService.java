@@ -9,6 +9,7 @@ import co.kesti.smartcity.util.JsonUtils;
 import co.kesti.smartcity.util.StreamUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -46,10 +47,11 @@ public class DevRealtimeObsService {
 
 
         Map<String, RealtimeObsData> obsDataMap = devObsInfoRepository.findAllByDevObsInfoKeyDevId(devId).stream()
+                .filter(devObsInfo -> StringUtils.isNotBlank(devObsInfo.getObsItemId()))
                 .map(devObsInfo -> {
                     String obsItemName = obsItemMap.getOrDefault(devObsInfo.getObsItemId(), "");
                     String unitType = devObsInfo.getUnitType();
-                    Float obsItemValue = getLatestValue(devId, devObsInfo.getObsItemId()).orElse(0F);
+                    Float obsItemValue = getLatestValue(devId, devObsInfo.getObsItemId());
 
                     return RealtimeObsData.builder()
                             .obsItemId(devObsInfo.getObsItemId())
@@ -60,14 +62,14 @@ public class DevRealtimeObsService {
 
                 }).collect(Collectors.toMap(RealtimeObsData::getObsItemId, Function.identity()));
 
-        log.info("obsDataMap: {}", JsonUtils.toPrettyString(obsDataMap));
+        log.info("obsDataMap: {}", JsonUtils.toString(obsDataMap));
          return obsDataMap;
 
     }
 
 
-    public Optional<Float> getLatestValue(String devId, String obsItemId) {
+    public Float getLatestValue(String devId, String obsItemId) {
         List<Float> realtimeObs = devRealtimeObsRepository.getLatestObsItemValue(devId, obsItemId, PageRequest.of(0, 1)).stream().map(DevRealtimeObs::getObsItemValue).collect(Collectors.toList());
-        return StreamUtil.head(realtimeObs);
+        return StreamUtil.head(realtimeObs).orElse(0F);
     }
 }

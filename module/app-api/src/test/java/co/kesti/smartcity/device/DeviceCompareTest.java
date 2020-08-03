@@ -1,19 +1,16 @@
 package co.kesti.smartcity.device;
 
-import co.kesti.smartcity.entity.DevCompare;
 import co.kesti.smartcity.entity.DevInfo;
-import co.kesti.smartcity.entity.DevRealtimeObs;
 import co.kesti.smartcity.repository.DevCompareRepository;
 import co.kesti.smartcity.repository.DevInfoRepository;
-import co.kesti.smartcity.repository.DevObsInfoRepository;
 import co.kesti.smartcity.repository.DevRealtimeObsRepository;
+import co.kesti.smartcity.service.DevInfoService;
 import co.kesti.smartcity.service.DevRealtimeObsService;
 import co.kesti.smartcity.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
@@ -33,6 +30,9 @@ class DeviceCompareTest {
     @Autowired
     private DevRealtimeObsService devRealtimeObsService;
 
+    @Autowired
+    private DevInfoService devInfoService;
+
 
     @Test
     public void select() {
@@ -42,4 +42,9 @@ class DeviceCompareTest {
 //        List<DevCompare> list = devCompareRepository.findAllByDevCompareKeyDevId(devId);
         log.info("{}", JsonUtils.toPrettyString(list));
     }
+
+//    @Test
+//    public void compare() {
+//        devInfoService.getMonitoringDeviceList();
+//    }
 }

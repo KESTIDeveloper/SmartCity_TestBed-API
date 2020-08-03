@@ -55,6 +55,8 @@ public class QDevInfo extends EntityPathBase<DevInfo> {
 
     public final NumberPath<Integer> mbrSeq = createNumber("mbrSeq", Integer.class);
 
+    public final StringPath prdtType = createString("prdtType");
+
     public final StringPath protocolRule = createString("protocolRule");
 
     public final StringPath protocolType = createString("protocolType");

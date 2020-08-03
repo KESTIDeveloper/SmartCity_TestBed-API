@@ -45,6 +45,16 @@ public interface ManagementEventMapper {
     public int updateEvt(MgmtEvtVo param);
 
     /**
+     * 이벤트 상태 여부 수정
+     */
+    public int updateEvtStatYn(MgmtEvtVo param);
+
+    /**
+     * 이벤트 삭제
+     */
+    public int deleteEvt(MgmtEvtDelReqVo param);
+
+    /**
      * 이벤트 멀티 삭제
      */
     public int deleteEvtMulti(MgmtEvtDelReqVo param);

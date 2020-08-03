@@ -13,7 +13,7 @@ public class CmntFrumGrpVo extends BaseParamVo {
 
     private static final long serialVersionUID = 1L;
 
-    /* 포럼그룹일련번호 */
+    /* 포럼그룹순번 */
     private Long forumGroupSeq;
 
     /* 포럼그룹주제 */

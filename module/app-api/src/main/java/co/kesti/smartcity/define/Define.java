@@ -25,4 +25,13 @@ public class Define {
     public final static String EXCEL_HAED_LIST = "headList";
     public final static String EXCEL_BODY_LIST = "bodyList";
 
+
+    // 모드
+    public static class Mode {
+        public final static String CREATE = "C";
+        public final static String READ   = "R";
+        public final static String UPDATE = "U";
+        public final static String DELETE = "D";
+    }
+
 }

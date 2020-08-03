@@ -3,6 +3,7 @@ package co.kesti.smartcity.service;
 import co.kesti.smartcity.entity.CdDtl;
 import co.kesti.smartcity.entity.CdDtlKey;
 import co.kesti.smartcity.model.request.ReqeustCdDtl;
+import co.kesti.smartcity.model.request.RequestSearchManufacturer;
 import co.kesti.smartcity.repository.CdDtlRepository;
 import co.kesti.smartcity.error.ApplicationException;
 import co.kesti.smartcity.error.ResponseCode;
@@ -67,6 +68,10 @@ public class CdDtlService {
     public Map<String, String> getObsItemMap() {
         return getCodeGroupInfosMapByGroupId("OBS");
     }
+
+    public Map<String, String> getObsTypeMap() {
+        return getCodeGroupInfosMapByGroupId("OBSTYPE");
+    }
     public Map<String, String> getObsItemUnitMap() {
         return getCodeGroupInfosMapByGroupId("OBSUNIT");
     }
@@ -76,5 +81,10 @@ public class CdDtlService {
     }
     public Map<String, String> get() {
         return getCodeGroupInfosMapByGroupId("PROTR");
+    }
+
+    public List<CdDtl> searchManufacturer(RequestSearchManufacturer request) {
+        List<CdDtl> cdDtls = getCodeGroupInfosByGroupId("MANF");
+        return cdDtls.stream().filter(cdDtl -> cdDtl.getDtlCdNm().contains(request.getKeyword())).collect(Collectors.toList());
     }
 }

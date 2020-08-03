@@ -1,10 +1,13 @@
 package co.kesti.smartcity.entity;
 
 
+import co.kesti.smartcity.model.RealtimeObsData;
+import com.google.common.collect.Lists;
 import lombok.*;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -53,8 +56,14 @@ public class DevInfo extends BaseAuditor {
 
 	private Boolean testDevYn;
 
+	private String prdtType;// 수정자 아이디
+
+
 	@Transient
 	private String protocolRuleName;
+
+	@Transient
+	private String address;
 
 
 }

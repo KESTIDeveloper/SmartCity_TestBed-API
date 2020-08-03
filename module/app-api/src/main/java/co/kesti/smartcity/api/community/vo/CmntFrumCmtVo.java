@@ -13,13 +13,13 @@ public class CmntFrumCmtVo extends BaseParamVo {
 
     private static final long serialVersionUID = 1L;
 
-    /* 포럼댓글일련번호 */
+    /* 포럼댓글순번 */
     private Long  forumCommentSeq;
 
-    /* 포럼그룹일련번호 */
+    /* 포럼그룹순번 */
     private Long forumGroupSeq;
 
-    /* 포럼일련번호 */
+    /* 포럼순번 */
     private Long forumSeq;
 
     /* 부모댓글 */

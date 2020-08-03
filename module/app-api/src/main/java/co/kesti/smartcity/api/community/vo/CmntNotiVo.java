@@ -13,10 +13,10 @@ public class CmntNotiVo extends BaseParamVo {
 
     private static final long serialVersionUID = 1L;
 
-    /* 공지사항일련번호 */
+    /* 공지사항순번 */
     private Long noticeSeq;
 
-    /* 공지사항일련번호 */
+    /* 공지사항태그 */
     private Boolean noticeTag;
 
     /* 공지사항주제 */

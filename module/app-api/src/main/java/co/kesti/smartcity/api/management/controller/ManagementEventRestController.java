@@ -78,13 +78,37 @@ public class ManagementEventRestController {
     }
 
     /**
-     * 이벤트 목록 삭제
+     * 이벤트 상태 여부 수정
      * @param param
      * @return
      */
-    @PostMapping("/deleteEvtList")
-    public ApiResponse<?> deleteEvtList(MgmtEvtDelReqVo param) {
-        managementEventService.deleteEvtList(param);
+    @PostMapping("/updateEvtStatYn")
+    public ApiResponse<?> updateEvtStatYn(MgmtEvtVo param) {
+        managementEventService.updateEvtStatYn(param);
+
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 이벤트 삭제
+     * @param param
+     * @return
+     */
+    @PostMapping("/deleteEvt")
+    public ApiResponse<?> deleteEvt(MgmtEvtDelReqVo param) {
+        managementEventService.deleteEvt(param);
+
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 이벤트 멀티 삭제
+     * @param param
+     * @return
+     */
+    @PostMapping("/deleteEvtMulti")
+    public ApiResponse<?> deleteEvtMulti(@RequestBody MgmtEvtDelReqVo param) {
+        managementEventService.deleteEvtMulti(param);
 
         return ApiResponse.ok();
     }

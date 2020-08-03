@@ -21,4 +21,7 @@ public class MgmtEvtDtlVo extends BaseParamVo {
     /* 측정목록 */
     private List<MgmtEvtObsVo> obsList;
 
+    /* 모드 */
+    private String mode;
+
 }
