@@ -29,6 +29,12 @@ public interface CommunityForumService {
     public CmntFrumGrpVo selectFrumGrpInfo(Long forumGroupSeq);
 
     /**
+     * 포럼 그룹 정보 조회
+     * @return
+     */
+    public List<CmntFrumGrpVo> selectFrumGrpList();
+
+    /**
      * 포럼 목록 조회
      * @param param
      * @return
@@ -71,14 +77,27 @@ public interface CommunityForumService {
      * 포럼 코멘트 목록 조회
      * @param forumGroupSeq
      * @param forumSeq
+     * @param mbrId
      * @return
      */
-    public List<CmntFrumCmtVo> selectFrumCmtList(Long forumGroupSeq, Long forumSeq);
+    public List<CmntFrumCmtVo> selectFrumCmtList(Long forumGroupSeq, Long forumSeq, String mbrId);
 
     /**
      * 포럼 코멘트 등록
      * @param param
      */
     public void insertFrumCmt(CmntFrumCmtVo param);
+
+    /**
+     * 포럼 코멘트 수정
+     * @param param
+     */
+    public void updateFrumCmt(CmntFrumCmtVo param);
+
+    /**
+     * 포럼 코멘트 삭제
+     * @param param
+     */
+    public void deleteFrumCmt(CmntFrumCmtVo param);
 
 }

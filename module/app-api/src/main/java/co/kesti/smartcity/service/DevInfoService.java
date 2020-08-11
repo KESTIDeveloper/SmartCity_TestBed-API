@@ -1,8 +1,6 @@
 package co.kesti.smartcity.service;
 
-import co.kesti.smartcity.entity.CdDtl;
-import co.kesti.smartcity.entity.ComMbr;
-import co.kesti.smartcity.entity.DevInfo;
+import co.kesti.smartcity.entity.*;
 import co.kesti.smartcity.entity.custom.DevInfoProjection;
 import co.kesti.smartcity.error.ApplicationException;
 import co.kesti.smartcity.error.ResponseCode;
@@ -13,16 +11,18 @@ import co.kesti.smartcity.model.request.RequestSearchManufacturer;
 import co.kesti.smartcity.model.response.ResponseAddress;
 import co.kesti.smartcity.repository.DevCompareRepository;
 import co.kesti.smartcity.repository.DevInfoRepository;
+import co.kesti.smartcity.repository.DevObsInfoRepository;
 import co.kesti.smartcity.util.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,6 +38,8 @@ public class DevInfoService {
 
     private final ComMbrService comMbrService;
 
+    private final DevObsInfoRepository devObsInfoRepository;
+
     private final DevMonitorService devMonitorService;
 
     private final MapService mapService;
@@ -51,13 +53,15 @@ public class DevInfoService {
     }
 
     public Page<DevInfoProjection> getDevInfoProjectionsByCretrId(String cretrId, Pageable pageable) {
-        return devInfoRepository.getDevInfoProjectionsByCretrId(cretrId, pageable);
+        ComMbr comMbr = comMbrService.getMbrById(cretrId);
+
+        return devInfoRepository.getDevInfoProjectionsByMbrSeq(comMbr.getMbrSeq(), pageable);
     }
 
 
     public DevInfo getDevInfoOrThrow(String devId) {
         DevInfo devInfo = devInfoRepository.findById(devId)
-                .orElseThrow(() -> new ApplicationException(ResponseCode.RESOURCE_NOT_FOUND, "User not found: " + devId));
+                .orElseThrow(() -> new ApplicationException(ResponseCode.RESOURCE_NOT_FOUND, "DevInfo not found: " + devId));
 
         Map<String, String> protocolRuleMap = cdDtlService.getProtocolRuleMap();
         String protocolRuleName = protocolRuleMap.getOrDefault(devInfo.getProtocolRule(), "");
@@ -70,13 +74,30 @@ public class DevInfoService {
         devInfo.setLiveStatus("LIVED");
         devInfo.setConnStatus("CONNECTED");
         devInfo.setTestDevYn(true);
-        devInfo.getCretrId();
 
         ComMbr comMbr = comMbrService.getMbrById(devInfo.getCretrId());
         devInfo.setMbrSeq(comMbr.getMbrSeq());
 
         log.info("create devInfo: {}", JsonUtils.toPrettyString(devInfo));
-        return devInfoRepository.save(devInfo);
+
+        DevInfo savedDevInfo = devInfoRepository.save(devInfo);
+        AtomicInteger compareOrder = new AtomicInteger(0);
+        requestDevInfo.getCompareDevices().stream().forEach(devId ->{
+
+            devInfoRepository.findById(devId).ifPresent(compareDevInfo -> {
+
+                DevCompare devCompare = DevCompare.builder()
+                        .devCompareKey(DevCompareKey.builder().devId(devInfo.getDevId()).compareDevId(compareDevInfo.getDevId()).build())
+                        .cretrId(compareDevInfo.getCretrId())
+                        .useYn("Y")
+                        .compareOrder(compareOrder.addAndGet(1))
+                        .build();
+                devCompareRepository.save(devCompare);
+            });
+        });
+
+        log.info("{}", JsonUtils.toPrettyString(devInfo));
+        return savedDevInfo;
     }
 
     public DevInfo updateComMbr(String devId, RequestDevInfo requestDevInfo) {
@@ -90,6 +111,9 @@ public class DevInfoService {
     @Transactional
     public void delete(String devId) {
         DevInfo devInfo = getDevInfoOrThrow(devId);
+
+        devObsInfoRepository.deleteByDevObsInfoKey_DevId(devId);
+        devCompareRepository.deleteByDevCompareKeyDevId(devId);
         devInfoRepository.delete(devInfo);
     }
 

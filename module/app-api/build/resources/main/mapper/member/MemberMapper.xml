@@ -36,6 +36,25 @@
            AND del_yn = 'N'
     </select>
 
+    <!-- 회원 체크 정보 조회 -->
+    <select id="selectMbrChkInfo" parameterType="co.kesti.smartcity.api.member.vo.ComMbrVo" resultType="co.kesti.smartcity.api.member.vo.ComMbrVo">
+        SELECT /* MemberMapper.selectMbrChkInfo */
+               mbr_seq /* 회원순번 */
+             , mbr_id  /* 회원ID */
+          FROM com_mbr /* 회원TABLE */
+         WHERE user_nm = #{userNm}
+           AND del_yn  = 'N'
+        <if test="mbrId != null and mbrId != ''">
+           AND mbr_id = #{mbrId}
+        </if>
+        <if test="email != null and email != ''">
+           AND email = #{email}
+        </if>
+        <if test="mphonNo != null and mphonNo != ''">
+           AND mphon_no = fn_encrypt(#{mphonNo})
+        </if>
+    </select>
+
     <!-- 회원 중복 건수 조회 -->
     <select id="selectMbrDupCount" resultType="java.lang.Integer">
         SELECT /* MemberMapper.selectMbrDupCount */
@@ -65,6 +84,7 @@
              , tmp_pwd_iss_yn         /* 임시비밀번호발급여부 */
              , rmark                  /* 비고 */
              , login_fail_tmscnt      /* 로그인실패횟수 */
+             , country_name           /* 국가이름 */
              , cret_dt                /* 생성일시 */
              , cretr_id               /* 생성자ID */
              , amd_dt                 /* 수정일시 */
@@ -87,6 +107,7 @@
              , 'N'                    /* 임시비밀번호발급여부 */
              , #{rmark}               /* 비고 */
              , 0                      /* 로그인실패횟수 */
+             , #{countryName}         /* 국가이름 */
              , NOW()                  /* 생성일시 */
              , #{mbrId}               /* 생성자ID */
              , NOW()                  /* 수정일시 */
@@ -131,6 +152,28 @@
              , amd_dt            = NOW()    /* 수정일시 */
              , amdr_id           = #{mbrId} /* 수정자ID */
          WHERE mbr_id = #{mbrId}
+    </update>
+
+    <!-- 회원 인증키 수정 -->
+    <update id="updateMbrAuthKey">
+        UPDATE /* MemberMapper.updateMbrAuthKey */
+               com_mbr
+           SET mbr_pwd_new = #{authKey} /* 인증키 */
+             , amd_dt      = NOW()      /* 수정일시 */
+             , amdr_id     = #{mbrId}   /* 수정자ID */
+         WHERE mbr_id = #{mbrId}
+    </update>
+
+    <!-- 회원 비밀번호 수정 -->
+    <update id="updateMbrPwd">
+        UPDATE /* MemberMapper.updateMbrPwd */
+               com_mbr
+           SET mbr_pwd     = #{mbrPwd} /* 회원비밀번호 */
+             , mbr_pwd_new = NULL      /* 인증키 */
+             , amd_dt      = NOW()     /* 수정일시 */
+             , amdr_id     = #{mbrId}  /* 수정자ID */
+         WHERE mbr_id      = #{mbrId}
+           AND mbr_pwd_new = #{authKey}
     </update>
 
     <!-- 회원 삭제 -->

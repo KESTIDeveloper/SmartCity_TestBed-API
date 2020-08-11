@@ -36,7 +36,7 @@ public interface CommunityForumMapper {
     /**
      * 포럼 정보 조회
      */
-    public CmntFrumVo selectFrumInfo(@Param("forumGroupSeq") Long forumGroupSeq, @Param("forumSeq") Long forumSeq);
+    public CmntFrumVo selectFrumInfo(@Param("forumGroupSeq") Long forumGroupSeq, @Param("forumSeq") Long forumSeq, @Param("mbrId") String mbrId);
 
     /**
      * 포럼 건수 조회
@@ -86,11 +86,21 @@ public interface CommunityForumMapper {
     /**
      * 포럼 코멘트 목록 조회
      */
-    public List<CmntFrumCmtVo> selectFrumCmtList(@Param("forumGroupSeq") Long forumGroupSeq, @Param("forumSeq") Long forumSeq);
+    public List<CmntFrumCmtVo> selectFrumCmtList(@Param("forumGroupSeq") Long forumGroupSeq, @Param("forumSeq") Long forumSeq, @Param("mbrId") String mbrId);
 
     /**
      * 포럼 코멘트 등록
      */
     public int insertFrumCmt(CmntFrumCmtVo param);
+
+    /**
+     * 포럼 코멘트 수정
+     */
+    public int updateFrumCmt(CmntFrumCmtVo param);
+
+    /**
+     * 포럼 코멘트 삭제
+     */
+    public int deleteFrumCmt(CmntFrumCmtVo param);
 
 }

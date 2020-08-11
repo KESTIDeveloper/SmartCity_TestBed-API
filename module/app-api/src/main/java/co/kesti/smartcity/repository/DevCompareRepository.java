@@ -22,4 +22,6 @@ public interface DevCompareRepository extends JpaRepository<DevCompare, DevCompa
             "where c.devCompareKey.devId = ?1 and d.devId = c.devCompareKey.compareDevId " +
             "order by c.compareOrder asc")
     List<DevInfo> getDevCompareByDevId(String devId);
+
+    void deleteByDevCompareKeyDevId(String devId);
 }

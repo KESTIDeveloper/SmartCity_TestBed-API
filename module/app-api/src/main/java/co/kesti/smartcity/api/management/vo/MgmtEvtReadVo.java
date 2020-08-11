@@ -21,7 +21,4 @@ public class MgmtEvtReadVo extends BaseParamVo {
     /* 측정목록 */
     private List<MgmtEvtObsVo> obsList;
 
-    /* 로그목록 */
-    private List<MgmtEvtLogVo> logList;
-
 }

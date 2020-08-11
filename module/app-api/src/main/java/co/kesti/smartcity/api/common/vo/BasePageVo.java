@@ -57,6 +57,9 @@ public class BasePageVo extends BaseVo {
     @Setter(AccessLevel.NONE)
     private List<Integer> naviPageList;
 
+    /* 페이징설정여부 */
+    private boolean pagingSet = true;
+
     /**
      * 행번호 구하기
      */

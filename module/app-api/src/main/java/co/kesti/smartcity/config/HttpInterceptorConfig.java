@@ -1,33 +1,26 @@
 package co.kesti.smartcity.config;
 
 import co.kesti.smartcity.util.DateTimeUtils;
-import co.kesti.smartcity.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
-import org.springframework.http.codec.ServerCodecConfigurer;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
-import org.springframework.http.codec.json.Jackson2JsonEncoder;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Slf4j
 @Configuration
 public class HttpInterceptorConfig implements WebMvcConfigurer {
 
     @Autowired
-    private ApiLoggingInterceptor apiLoggingInterceptor;
+    private AuthInterceptor authInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(apiLoggingInterceptor)
-                .addPathPatterns("/**");
+        registry.addInterceptor(authInterceptor)
+                .addPathPatterns("/**/open-api/**")
+                .excludePathPatterns("/**/open-api/apply");
     }
 
     @Override

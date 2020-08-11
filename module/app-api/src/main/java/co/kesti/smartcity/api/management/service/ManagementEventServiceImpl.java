@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import co.kesti.smartcity.api.management.mapper.ManagementEventMapper;
 import co.kesti.smartcity.api.management.vo.MgmtEvtDelReqVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtDtlVo;
+import co.kesti.smartcity.api.management.vo.MgmtEvtLogReqVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtLogVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtObsVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtReadVo;
@@ -78,14 +79,10 @@ public class ManagementEventServiceImpl implements ManagementEventService {
         // 이벤트 측정 목록 조회
         List<MgmtEvtObsVo> obsList = managementEventMapper.selectEvtObsList(evntId);
 
-        // 이벤트 로그 목록 조회
-        List<MgmtEvtLogVo> logList = managementEventMapper.selectEvtLogList(evntId);
-
         // 결과값 설정
         MgmtEvtReadVo resultVo = new MgmtEvtReadVo();
         resultVo.setEvtInfo(evtInfo);
         resultVo.setObsList(obsList);
-        resultVo.setLogList(logList);
 
         return resultVo;
     }
@@ -244,6 +241,25 @@ public class ManagementEventServiceImpl implements ManagementEventService {
 
         // 이벤트 멀티 삭제
         managementEventMapper.deleteEvtMulti(param);
+    }
+
+    /**
+     * 이벤트 로그 목록 조회
+     */
+    @Override
+    public List<MgmtEvtLogVo> selectEvtLogList(MgmtEvtLogReqVo param) {
+        // 이벤트 로그 건수 조회
+        int evtLogCnt = managementEventMapper.selectEvtLogCount(param);
+        param.setTotCnt(evtLogCnt);
+
+        // 이벤트 로그 목록 조회
+        List<MgmtEvtLogVo> evtLogList = new ArrayList<>();
+
+        if (evtLogCnt > 0) {
+            evtLogList = managementEventMapper.selectEvtLogList(param);
+        }
+
+        return evtLogList;
     }
 
 }

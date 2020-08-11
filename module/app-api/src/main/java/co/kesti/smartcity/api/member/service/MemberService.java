@@ -18,6 +18,13 @@ public interface MemberService {
     public ComMbrVo selectMbrInfo(String mbrId, String pwdYn);
 
     /**
+     * 회원 체크 여부 조회
+     * @param param
+     * @return
+     */
+    public boolean selectMbrChkYn(ComMbrVo param);
+
+    /**
      * 회원 중복 건수 조회
      * @param mbrId
      * @return
@@ -47,6 +54,28 @@ public interface MemberService {
      * @param mbrId
      */
     public void updateLognFailCntReset(String mbrId);
+
+    /**
+     * 회원 아이디 찾기
+     * @param param
+     * @return
+     */
+    public ComMbrVo findMbrId(ComMbrVo param);
+
+    /**
+     * 회원 비밀번호 찾기
+     * @param param
+     * @return
+     */
+    public ComMbrVo findMbrPwd(ComMbrVo param);
+
+    /**
+     * 회원 비밀번호 수정
+     * @param mbrId
+     * @param mbrPWd
+     * @param authKey
+     */
+    public void updateMbrPwd(String mbrId, String mbrPWd, String authKey);
 
     /**
      * 회원 삭제

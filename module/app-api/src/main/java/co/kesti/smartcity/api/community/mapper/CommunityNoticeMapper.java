@@ -42,6 +42,11 @@ public interface CommunityNoticeMapper {
     public List<CmntNotiVo> selectNotiList(CmntNotiReqVo param);
 
     /**
+     * 메인 공지사항 목록 조회
+     */
+    public List<CmntNotiVo> selectMainNotiList();
+
+    /**
      * 공지사항 조회수 더하기 수정
      */
     public int updateNotiHitCntPlus(CmntNotiVo param);

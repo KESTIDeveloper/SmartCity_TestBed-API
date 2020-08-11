@@ -28,11 +28,15 @@ public interface DevObsInfoRepository extends JpaRepository<DevObsInfo, DevObsIn
             "d.unitType as unitType, " +
             "cd.dtlCdNm as obsItemName " +
             "from DevObsInfo d, CdDtl cd " +
-            "where d.devObsInfoKey.devId = ?1 and cd.cdDtlKey.cdGroupId = 'OBS' and cd.cdDtlKey.dtlCd = d.devObsInfoKey.obsItemId")
+            "where d.devObsInfoKey.devId = ?1 and cd.cdDtlKey.cdGroupId = 'OBS' and cd.cdDtlKey.dtlCd = d.devObsInfoKey.obsItemId " +
+            "order by d.registeDt desc")
     Page<DevObsInfoProjection> getDevObsInfosByDevId(String devId, Pageable pageable);
 
 
     Page<DevObsInfo> findAllByOrderByRegisteDtDesc(Pageable pageable);
 
     List<DevObsInfo> findAllByDevObsInfoKeyDevId(String devId);
+
+
+    void deleteByDevObsInfoKey_DevId(String devId);
 }

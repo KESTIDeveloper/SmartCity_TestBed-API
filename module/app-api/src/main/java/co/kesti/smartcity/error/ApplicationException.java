@@ -12,6 +12,7 @@ public class ApplicationException extends RuntimeException {
         this.responseCode = code;
     }
 
+    @Builder
     public ApplicationException(ResponseCode code, String message) {
         super(message);
         this.responseCode = code;

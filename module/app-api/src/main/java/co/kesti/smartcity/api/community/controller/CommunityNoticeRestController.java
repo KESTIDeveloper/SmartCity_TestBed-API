@@ -38,6 +38,17 @@ public class CommunityNoticeRestController {
     }
 
     /**
+     * 메인 공지사항 목록 조회
+     * @return
+     */
+    @GetMapping("/selectMainNotiList")
+    public ApiResponse<?> selectMainNotiList() {
+        List<CmntNotiVo> resList = communityNoticeService.selectMainNotiList();
+
+        return ApiResponse.ok(resList);
+    }
+
+    /**
      * 공지사항 읽기 정보 조회
      * @param param
      * @return

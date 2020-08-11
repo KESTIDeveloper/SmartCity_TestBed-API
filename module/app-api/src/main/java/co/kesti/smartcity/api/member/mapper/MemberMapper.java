@@ -19,6 +19,11 @@ public interface MemberMapper {
     public ComMbrVo selectMbrInfo(@Param("mbrId") String mbrId);
 
     /**
+     * 회원 체크 정보 조회
+     */
+    public ComMbrVo selectMbrChkInfo(ComMbrVo param);
+
+    /**
      * 회원 중복 건수 조회
      */
     public int selectMbrDupCount(@Param("mbrId") String mbrId);
@@ -42,6 +47,16 @@ public interface MemberMapper {
      * 로그인 실패 건수 초기화 수정
      */
     public int updateLognFailCntReset(@Param("mbrId") String mbrId);
+
+    /**
+     * 회원 인증키 수정
+     */
+    public int updateMbrAuthKey(@Param("mbrId") String mbrId, @Param("authKey") String authKey);
+
+    /**
+     * 회원 비밀번호 수정
+     */
+    public int updateMbrPwd(@Param("mbrId") String mbrId, @Param("mbrPwd") String mbrPwd, @Param("authKey") String authKey);
 
     /**
      * 회원 삭제

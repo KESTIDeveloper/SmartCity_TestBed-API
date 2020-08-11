@@ -40,9 +40,9 @@ public class CdGroupBasController {
         return ApiResponse.ok(cdGroupBas);
     }
 
+
     @PutMapping("/cdGroupBas/{id}")
-    public ApiResponse updateCodeGroup(@PathVariable(value = "id") String cdGroupId,
-                                       @RequestBody RequestCdGroupBas requestCdGroupBas) {
+    public ApiResponse updateCodeGroup(@PathVariable(value = "id") String cdGroupId, @RequestBody RequestCdGroupBas requestCdGroupBas) {
         CdGroupBas res = cdGroupBasService.updateCodeGroup(cdGroupId, requestCdGroupBas);
         return ApiResponse.ok(res);
     }

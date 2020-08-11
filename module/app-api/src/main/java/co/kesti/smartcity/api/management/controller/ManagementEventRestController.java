@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import co.kesti.smartcity.api.management.service.ManagementEventService;
 import co.kesti.smartcity.api.management.vo.MgmtEvtDelReqVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtDtlVo;
+import co.kesti.smartcity.api.management.vo.MgmtEvtLogReqVo;
+import co.kesti.smartcity.api.management.vo.MgmtEvtLogVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtReadVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtReqVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtVo;
@@ -113,4 +115,15 @@ public class ManagementEventRestController {
         return ApiResponse.ok();
     }
 
+    /**
+     * 이벤트 로그 목록 조회
+     * @param param
+     * @return
+     */
+    @GetMapping("/selectEvtLogList")
+    public ApiResponse<?> selectEvtLogList(MgmtEvtLogReqVo param) {
+        List<MgmtEvtLogVo> resList = managementEventService.selectEvtLogList(param);
+
+        return ApiResponse.ok(resList, param);
+    }
 }

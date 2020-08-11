@@ -15,7 +15,7 @@ public class DevStats {
 
     private Map<String, Integer> device;
     private Map<String, Integer> testDevice;
-    private Map<String, Stats> country;
+    private Map<String, Long> country;
 
     public static class Stats {
         private Integer count;

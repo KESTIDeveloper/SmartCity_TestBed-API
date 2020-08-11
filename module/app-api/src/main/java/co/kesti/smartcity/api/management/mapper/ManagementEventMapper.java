@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import co.kesti.smartcity.api.management.vo.MgmtEvtDelReqVo;
+import co.kesti.smartcity.api.management.vo.MgmtEvtLogReqVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtLogVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtObsVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtReqVo;
@@ -75,8 +76,13 @@ public interface ManagementEventMapper {
     public int deleteEvtObsAll(@Param("evntId") String evntId);
 
     /**
+     * 이벤트 로그 건수 조회
+     */
+    public int selectEvtLogCount(MgmtEvtLogReqVo param);
+
+    /**
      * 이벤트 로그 목록 조회
      */
-    public List<MgmtEvtLogVo> selectEvtLogList(@Param("evntId") String evntId);
+    public List<MgmtEvtLogVo> selectEvtLogList(MgmtEvtLogReqVo param);
 
 }

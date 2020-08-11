@@ -4,6 +4,7 @@ package co.kesti.smartcity.entity;
 import co.kesti.smartcity.model.RealtimeObsData;
 import com.google.common.collect.Lists;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
@@ -56,7 +57,7 @@ public class DevInfo extends BaseAuditor {
 
 	private Boolean testDevYn;
 
-	private String prdtType;// 수정자 아이디
+	private String prdtType;
 
 
 	@Transient
@@ -66,5 +67,8 @@ public class DevInfo extends BaseAuditor {
 	private String address;
 
 
+	public Boolean getHasImage() {
+		return StringUtils.isNotBlank(devImgPath);
+	}
 }
 	

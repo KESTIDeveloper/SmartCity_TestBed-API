@@ -52,4 +52,5 @@ public class ComMbrController {
         comMbrService.delete(mbrSeq);
         return ApiResponse.ok(ImmutableMap.of("deleted", Boolean.TRUE));
     }
+
 }

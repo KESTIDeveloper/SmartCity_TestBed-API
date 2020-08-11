@@ -27,6 +27,8 @@ public class QComMbr extends EntityPathBase<ComMbr> {
 
     public final DateTimePath<java.time.LocalDateTime> chgPwdDt = createDateTime("chgPwdDt", java.time.LocalDateTime.class);
 
+    public final StringPath countryName = createString("countryName");
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> cretDt = _super.cretDt;
 

@@ -1,8 +1,11 @@
 package co.kesti.smartcity.model;
 
 import co.kesti.smartcity.entity.DevInfo;
+import co.kesti.smartcity.util.DateTimeUtils;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -15,6 +18,7 @@ public class DevMonitor {
 
     private DevInfo devInfo;
     private String address;
+    private LocalDateTime updateTime;
     private Float pm25;
 
     public String getDevId() {
@@ -25,6 +29,13 @@ public class DevMonitor {
         return devInfo.getDevName();
     }
 
+    public String getUpdateTime() {
+        if (updateTime != null) {
+            return DateTimeUtils.getDefaultFormat(updateTime);
+        } else {
+            return "";
+        }
+    }
 
     public String getMarkerIcon() {
         String testYn = devInfo.getTestDevYn() ? "t" : "nt";
@@ -56,5 +67,5 @@ public class DevMonitor {
             return "";
         }
     }
-    private Map<String, RealtimeObsData> obsDataMap;
+    private List<RealtimeObsData> obsDataList;
 }

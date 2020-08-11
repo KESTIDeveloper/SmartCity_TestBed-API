@@ -32,7 +32,7 @@ public class ManagementDeviceRestController {
      * @return
      */
     @PostMapping("/selectDevCdList")
-    public ApiResponse<?> selectDevCdList(@RequestParam(value="mbrSeq", required=true) Long mbrSeq) {
+    public ApiResponse<?> selectDevCdList(@RequestParam(value="mbrSeq", required=false) Long mbrSeq) {
         List<MgmtDevCdVo> resList = managementDeviceService.selectDevCdList(mbrSeq);
 
         return ApiResponse.ok(resList);

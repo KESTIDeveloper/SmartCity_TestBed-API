@@ -44,8 +44,12 @@ public class DeviceObsInfoService {
     }
 
     public DevObsInfo createDevObsInfo(RequestDevObsInfo requestDevObsInfo) {
-        DevObsInfo devInfo = requestDevObsInfo.toDevObsInfo();
-        return devObsInfoRepository.save(devInfo);
+        DevObsInfo devObsInfo = requestDevObsInfo.toDevObsInfo();
+
+        devObsInfoRepository.findByDevObsInfoKey(devObsInfo.getDevObsInfoKey()).ifPresent(oldObsInfo -> {
+            devObsInfo.setRegisteDt(oldObsInfo.getRegisteDt());
+        });
+        return devObsInfoRepository.save(devObsInfo);
     }
 
     public DevObsInfo updateDevObsInfo(RequestDevObsInfo requestDevObsInfo) {

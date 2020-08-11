@@ -56,6 +56,17 @@ public class CommunityForumRestController {
     }
 
     /**
+     * 포럼 그룹 목록 조회
+     * @return
+     */
+    @GetMapping("/selectFrumGrpList")
+    public ApiResponse<?> selectFrumGrpList() {
+        List<CmntFrumGrpVo> resList = communityForumService.selectFrumGrpList();
+
+        return ApiResponse.ok(resList);
+    }
+
+    /**
      * 포럼 읽기 정보 조회
      * @param param
      * @return
@@ -135,8 +146,9 @@ public class CommunityForumRestController {
      */
     @GetMapping("/selectFrumCmtList")
     public ApiResponse<?> selectFrumCmtList(@RequestParam(value="forumGroupSeq", required=true) Long forumGroupSeq,
-            @RequestParam(value="forumSeq", required=true) Long forumSeq) {
-        List<CmntFrumCmtVo> resList = communityForumService.selectFrumCmtList(forumGroupSeq, forumSeq);
+            @RequestParam(value="forumSeq", required=true) Long forumSeq,
+            @RequestParam(value="mbrId", required=false) String mbrId) {
+        List<CmntFrumCmtVo> resList = communityForumService.selectFrumCmtList(forumGroupSeq, forumSeq, mbrId);
 
         return ApiResponse.ok(resList);
     }
@@ -144,12 +156,37 @@ public class CommunityForumRestController {
     /**
      * 포럼 코멘트 등록
      * @param param
+     * @param request
      * @return
      */
     @PostMapping("/insertFrumCmt")
     public ApiResponse<?> insertFrumCmt(CmntFrumCmtVo param, HttpServletRequest request) {
         param.setIpAdress(request.getRemoteAddr());
         communityForumService.insertFrumCmt(param);
+
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 포럼 코멘트 수정
+     * @param param
+     * @return
+     */
+    @PostMapping("/updateFrumCmt")
+    public ApiResponse<?> updateFrumCmt(CmntFrumCmtVo param) {
+        communityForumService.updateFrumCmt(param);
+
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 포럼 코멘트 삭제
+     * @param param
+     * @return
+     */
+    @PostMapping("/deleteFrumCmt")
+    public ApiResponse<?> deleteFrumCmt(CmntFrumCmtVo param) {
+        communityForumService.deleteFrumCmt(param);
 
         return ApiResponse.ok();
     }

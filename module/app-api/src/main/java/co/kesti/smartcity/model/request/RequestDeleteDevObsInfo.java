@@ -16,17 +16,13 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class RequestDeleteDevObsInfo {
 
-    @NotBlank
     private String devId;
 
-    @NotBlank
     private String obsItemId;
-
 
 
     public DevObsInfoKey getDevObsInfoKey() {
         return DevObsInfoKey.builder().devId(devId).obsItemId(obsItemId).build();
     }
-
 
 }

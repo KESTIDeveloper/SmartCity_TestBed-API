@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import co.kesti.smartcity.api.member.service.MemberService;
 import co.kesti.smartcity.api.member.vo.ComMbrVo;
+import co.kesti.smartcity.error.ResponseCode;
 import co.kesti.smartcity.model.response.ApiResponse;
 
 /**
@@ -107,6 +108,56 @@ public class MemberRestController {
     @PostMapping("/deleteMbr")
     public ApiResponse<?> deleteMbr(@RequestParam(value="mbrId", required=true) String mbrId) {
         memberService.deleteMbr(mbrId);
+
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 회원 체크 여부 조회
+     * @param param
+     * @return
+     */
+    @PostMapping("/selectMbrChkYn")
+    public ApiResponse<?> selectMbrChkYn(ComMbrVo param) {
+        boolean chkYn = memberService.selectMbrChkYn(param);
+
+        return ApiResponse.builder().status(true).code(ResponseCode.OK.getHttpStatus().value()).data(chkYn).build();
+    }
+
+    /**
+     * 회원 아이디 찾기
+     * @param param
+     * @return
+     */
+    @PostMapping("/findMbrId")
+    public ApiResponse<?> findMbrId(ComMbrVo param) {
+        ComMbrVo mbrInfo = memberService.findMbrId(param);
+
+        return ApiResponse.builder().status(true).code(ResponseCode.OK.getHttpStatus().value()).data(mbrInfo.getMbrId()).build();
+    }
+
+    /**
+     * 회원 비밀번호 찾기
+     * @param param
+     * @return
+     */
+    @PostMapping("/findMbrPwd")
+    public ApiResponse<?> findMbrPwd(ComMbrVo param) {
+        ComMbrVo mbrInfo = memberService.findMbrPwd(param);
+
+        return ApiResponse.builder().status(true).code(ResponseCode.OK.getHttpStatus().value()).data(mbrInfo.getMbrId()).build();
+    }
+
+    /**
+     * 회원 비밀번호 수정
+     * @param param
+     * @return
+     */
+    @PostMapping("/updateMbrPwd")
+    public ApiResponse<?> updateMbrPwd(@RequestParam(value="mbrId", required=true) String mbrId,
+            @RequestParam(value="mbrPwd", required=true) String mbrPwd,
+            @RequestParam(value="authKey", required=true) String authKey) {
+        memberService.updateMbrPwd(mbrId, mbrPwd, authKey);
 
         return ApiResponse.ok();
     }

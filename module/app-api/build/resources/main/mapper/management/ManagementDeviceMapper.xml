@@ -18,8 +18,10 @@
              , dev_name AS dev_nm /* 디비이스이름 */
              , FALSE    AS act_yn /* 활성화여부 */
           FROM dev_info /* 디바이스TABLE */
-         WHERE mbr_seq     = #{mbrSeq}
-           AND test_dev_yn = TRUE
+         WHERE test_dev_yn = TRUE
+        <if test="mbrSeq != null">
+           AND mbr_seq     = #{mbrSeq}
+        </if>
          ORDER BY dev_id ASC
     </select>
 

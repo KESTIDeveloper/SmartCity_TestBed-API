@@ -1,6 +1,7 @@
 package co.kesti.smartcity.device;
 
 import co.kesti.smartcity.entity.DevInfo;
+import co.kesti.smartcity.entity.custom.DevInfoCountryStatsProjection;
 import co.kesti.smartcity.repository.DevCompareRepository;
 import co.kesti.smartcity.repository.DevInfoRepository;
 import co.kesti.smartcity.repository.DevRealtimeObsRepository;
@@ -43,8 +44,10 @@ class DeviceCompareTest {
         log.info("{}", JsonUtils.toPrettyString(list));
     }
 
-//    @Test
-//    public void compare() {
-//        devInfoService.getMonitoringDeviceList();
-//    }
+    @Test
+    public void compare() {
+        List<String> res = devInfoRepository.getDevInfoCountryStats(true);
+        log.info("{}", JsonUtils.toPrettyString(res));
+
+    }
 }

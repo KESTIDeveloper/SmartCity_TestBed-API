@@ -34,7 +34,7 @@
                  SELECT std.dev_id                  /* 디바이스ID */
                       , #{obsItemId} AS obs_item_id /* 측정항목ID */
                       , std.obs_time                /* 측정시간 */
-                   FROM fn_get_stsc_std_list(#{stscDtmCd}, #{strDt}, #{endDt}, #{devDivVal}) std /* 통계기준목록TABLE */
+                   FROM fn_get_dev_stsc_std_list(#{stscDtmCd}, #{strDt}, #{endDt}, #{devDivVal}) std /* 디바이스통계기준목록TABLE */
                 ) mst
 LEFT OUTER JOIN (
                  SELECT fir.dev_id                                                                /* 디바이스ID */
@@ -97,45 +97,185 @@ LEFT OUTER JOIN (
                 </foreach>
                 )
             AND obs.obs_item_id = #{obsItemId}
+        <choose>
+            <!-- 시간 파라미터 시분초 -->
+            <when test='"HOUR_PARAM_DTM".equals(stscDtmCd)'>
+            AND itm.obs_time BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+            </when>
+            <otherwise>
             AND itm.obs_time BETWEEN TO_TIMESTAMP(#{strDt} || ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_TIMESTAMP(#{endDt} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+            </otherwise>
+        </choose>
     </sql>
 
     <!-- 디바이스 상태 합계 정보 조회 -->
     <select id="selectDevStatTotInfo" parameterType="co.kesti.smartcity.api.finedust.vo.FineDustDevStatReqVo" resultType="co.kesti.smartcity.api.finedust.vo.FineDustDevStatTotVo">
         SELECT /* FineDustStatisticsMapper.selectDevStatInfo */
-               SUM(CASE WHEN grp.succ_yn = 'Y' THEN 1 ELSE 0 END) AS succ_cnt
-             , SUM(CASE WHEN grp.succ_yn = 'N' THEN 1 ELSE 0 END) AS fail_cnt
-             , COUNT(*)                                           AS tot_cnt
+               thi.tot_cnt                               /* 총건수 */
+             , thi.succ_cnt                              /* 성공건수 */
+             , thi.tot_cnt - thi.succ_cnt   AS fail_cnt  /* 실패건수 */
+             , thi.tot_hour                              /* 총시간 */
+             , thi.oprt_hour                             /* 가동시간 */
+             , thi.tot_hour - thi.oprt_hour AS nopr_hour /* 비가동시간 */
           FROM (
-                SELECT mst.obs_time   /* 측정시간 */
-                     , CASE WHEN dtl.obs_cnt >= mst.intval THEN 'Y'
-                            ELSE 'N'
-                       END AS succ_yn /* 성공여부 */
+                SELECT SUM(sec.tot_cnt)  AS tot_cnt   /* 총건수 */
+                     , CASE WHEN SUM(sec.obs_cnt) > 0 THEN
+                                 CASE WHEN ROUND(SUM(sec.obs_cnt) / MAX(sec.intval)) > SUM(sec.tot_cnt) THEN SUM(sec.tot_cnt)
+                                      ELSE ROUND(SUM(sec.obs_cnt) / MAX(sec.intval))
+                                 END
+                            ELSE 0
+                       END               AS succ_cnt  /* 성공건수 */
+                     , SUM(sec.tot_hour) AS tot_hour  /* 총시간 */
+                     , CASE WHEN MAX(sec.max_obs_time) IS NOT NULL THEN (EXTRACT(EPOCH FROM MAX(sec.max_obs_time) - MIN(sec.min_obs_time)) / 3600)::INTEGER
+                            ELSE 0
+                       END               AS oprt_hour /* 가동시간 */
                   FROM (
-                        SELECT std.dev_id   /* 디바이스ID */
-                             , std.obs_time /* 측정시간 */
-                             , std.intval   /* 관측주기 */
-                          FROM fn_get_dev_stat_std_list(#{strDt}, #{endDt}, #{devId}) std /* 디바이스상태기준목록TABLE */
-                       ) mst
-       LEFT OUTER JOIN (
-                        SELECT fir.dev_id          /* 디바이스ID */
-                             , fir.obs_time        /* 측정시간 */
-                             , COUNT(*) AS obs_cnt /* 측정건수 */
+                        SELECT mst.obs_time                        /* 측정시간 */
+                             , 24  AS tot_cnt                      /* 총건수 */
+                             , 24  AS tot_hour                     /* 총건수 */
+                             , mst.intval                          /* 시간당간격 */
+                             , COALESCE(dtl.obs_cnt, 0) AS obs_cnt /* 측정건수 */
+                             , dtl.min_obs_time                    /* 최소측정시간 */
+                             , dtl.max_obs_time                    /* 최대측정시간 */
                           FROM (
-                                SELECT obs.dev_id                                      /* 디바이스ID */
-                                     , TO_CHAR(itm.obs_time, 'YYYY.MM.DD') AS obs_time /* 측정시간 */
-                                  FROM dev_obs_info obs /* 디바이스측정TABLE */
-                            INNER JOIN dev_realtime_obs itm /* 디바이스실시간측정TABLE */
-                                    ON obs.dev_id      = itm.dev_id
-                                   AND obs.obs_item_id = itm.obs_item_id
-                                 WHERE obs.dev_id = #{devId}
-                                   AND itm.obs_time BETWEEN TO_TIMESTAMP(#{strDt} || ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_TIMESTAMP(#{endDt} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
-                               ) fir
-                         GROUP BY fir.dev_id, fir.obs_time
-                       ) dtl
-                    ON mst.dev_id      = dtl.dev_id
-                   AND mst.obs_time    = dtl.obs_time
-               ) grp
+                                SELECT std.dev_id   /* 디바이스ID */
+                                     , std.obs_time /* 측정시간 */
+                                     , std.intval   /* 관측주기 */
+                                  FROM fn_get_dev_stat_std_list(#{strDt}, #{endDt}, #{devId}) std /* 디바이스상태기준목록TABLE */
+                               ) mst
+               LEFT OUTER JOIN (
+                                SELECT fir.dev_id                            /* 디바이스ID */
+                                     , fir.obs_time                          /* 측정시간 */
+                                     , COUNT(*) AS obs_cnt                   /* 측정건수 */
+                                     , MIN(fir.org_obs_time) AS min_obs_time /* 최소측정시간 */
+                                     , MAX(fir.org_obs_time) AS max_obs_time /* 최대측정시간 */
+                                  FROM (
+                                        SELECT obs.dev_id                                          /* 디바이스ID */
+                                             , TO_CHAR(itm.obs_time, 'YYYY.MM.DD') AS obs_time     /* 측정시간 */
+                                             , itm.obs_time                        AS org_obs_time /* 원본측정시간 */
+                                          FROM dev_obs_info obs /* 디바이스측정TABLE */
+                                    INNER JOIN dev_realtime_obs itm /* 디바이스실시간측정TABLE */
+                                            ON obs.dev_id      = itm.dev_id
+                                           AND obs.obs_item_id = itm.obs_item_id
+                                         WHERE obs.dev_id = #{devId}
+                                           AND itm.obs_time BETWEEN TO_TIMESTAMP(#{strDt} || ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_TIMESTAMP(#{endDt} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+                                       ) fir
+                                 GROUP BY fir.dev_id, fir.obs_time
+                               ) dtl
+                            ON mst.dev_id   = dtl.dev_id
+                           AND mst.obs_time = dtl.obs_time
+                       ) sec
+               ) thi
+    </select>
+
+    <!-- 디바이스 상태 이벤트 정보 조회 -->
+    <select id="selectDevStatEvtInfo" parameterType="co.kesti.smartcity.api.finedust.vo.FineDustDevStatReqVo" resultType="co.kesti.smartcity.api.finedust.vo.FineDustDevStatEvtVo">
+         SELECT /* FineDustStatisticsMapper.selectDevStatEvtInfo */
+                MAX(CASE WHEN mst.evnt_occr_div = 'A' THEN COALESCE(dtl.evnt_occr_cnt, 0)
+                         ELSE 0
+                    END)                            AS con_cnt /* 연결건수 */
+              , MAX(CASE WHEN mst.evnt_occr_div = 'B' THEN COALESCE(dtl.evnt_occr_cnt, 0)
+                         ELSE 0
+                    END)                            AS obs_cnt /* 측정건수 */
+              , COALESCE(SUM(dtl.evnt_occr_cnt), 0) AS tot_cnt /* 총건수 */
+           FROM (
+                 SELECT 'A' AS evnt_occr_div
+
+                  UNION ALL
+
+                 SELECT 'B' AS evnt_occr_div
+                ) mst
+LEFT OUTER JOIN (
+                 SELECT evt.evnt_occr_div         /* 이벤트발생구분 */
+                      , COUNT(*) AS evnt_occr_cnt /* 이벤트발생건수 */
+                   FROM evnt_info evt /* 이벤트TABLE */
+             INNER JOIN evnt_log log /* 이벤트로그TABLE */
+                     ON evt.evnt_id = log.evnt_id
+                  WHERE evt.dev_id = #{devId}
+                    AND evt.del_yn = 'N'
+                    AND log.cret_dt BETWEEN TO_TIMESTAMP(#{strDt} || ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_TIMESTAMP(#{endDt} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+                    AND log.del_yn = 'N'
+                  GROUP BY evt.evnt_occr_div
+                ) dtl
+             ON mst.evnt_occr_div = dtl.evnt_occr_div
+    </select>
+
+    <!-- 디바이스 상태 이벤트 측정 목록 resultMap -->
+    <resultMap id="devStatEvtObsListResultMap" type="co.kesti.smartcity.api.finedust.vo.FineDustDevStatEvtObsVo">
+        <id property="evtDt" column="evt_dt" />
+        <collection property="dtlList" ofType="co.kesti.smartcity.api.finedust.vo.FineDustDevStatEvtObsRowVo">
+            <id     property="evtObsCd" column="evt_obs_cd" />
+            <result property="logCnt"   column="log_cnt" />
+        </collection>
+    </resultMap>
+
+    <!-- 디바이스 상태 이벤트 측정 목록 조회 -->
+    <select id="selectDevStatEvtObsList" parameterType="co.kesti.smartcity.api.finedust.vo.FineDustDevStatReqVo" resultMap="devStatEvtObsListResultMap">
+        SELECT /* FineDustStatisticsMapper.selectDevStatEvtObsList */
+                mst.evt_dt                          /* 이벤트일자 */
+              , mst.evt_obs_cd                      /* 이벤트측정코드 */
+              , COALESCE(dtl.log_cnt, 0) AS log_cnt /* 로그건수 */
+           FROM (
+                 SELECT std.evt_dt     /* 이벤트일자 */
+                      , std.evt_obs_cd /* 이벤트측정코드 */
+                      , std.evt_obs_nm /* 이벤트측정명 */
+                   FROM fn_get_dev_evt_std_list(#{strDt}, #{endDt}) std /* 디바이스이벤트기준목록TABLE */
+                ) mst
+LEFT OUTER JOIN (
+                 SELECT fir.evt_dt          /* 이벤트일자 */
+                      , fir.evt_obs_cd      /* 이벤트측정코드 */
+                      , COUNT(*) AS log_cnt /* 로그건수 */
+                   FROM (
+                         SELECT TO_CHAR(log.cret_dt, 'YYYY.MM.DD') AS evt_dt     /* 이벤트일자 */
+                              , log.test_item                      AS evt_obs_cd /* 이벤트측정코드 */
+                           FROM evnt_info evt /* 이벤트TABLE */
+                     INNER JOIN evnt_log log /* 이벤트로그TABLE */
+                             ON evt.evnt_id = log.evnt_id
+                          WHERE evt.dev_id = #{devId}
+                            AND evt.del_yn = 'N'
+                            AND log.cret_dt BETWEEN TO_TIMESTAMP(#{strDt} || ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_TIMESTAMP(#{endDt} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+                            AND log.del_yn = 'N'
+                        ) fir
+                  GROUP BY fir.evt_dt, fir.evt_obs_cd
+                ) dtl
+             ON mst.evt_dt     = dtl.evt_dt
+            AND mst.evt_obs_cd = dtl.evt_obs_cd
+          ORDER BY mst.evt_dt ASC
+    </select>
+
+    <!-- 디바이스 상태 이벤트 로그 건수 조회 -->
+    <select id="selectDevStatEvtLogCount" parameterType="co.kesti.smartcity.api.finedust.vo.FineDustDevStatReqVo" resultType="java.lang.Integer">
+        SELECT /* FineDustStatisticsMapper.selectDevStatEvtLogCount */
+               COUNT(*) AS cnt
+          FROM evnt_info evt /* 이벤트TABLE */
+    INNER JOIN evnt_log log /* 이벤트로그TABLE */
+            ON evt.evnt_id = log.evnt_id
+         WHERE evt.dev_id = #{devId}
+           AND evt.del_yn = 'N'
+           AND log.cret_dt BETWEEN TO_TIMESTAMP(#{strDt} || ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_TIMESTAMP(#{endDt} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+           AND log.del_yn = 'N'
+    </select>
+
+    <!-- 디바이스 상태 이벤트 로그 목록 조회 -->
+    <select id="selectDevStatEvtLogList" parameterType="co.kesti.smartcity.api.finedust.vo.FineDustDevStatReqVo" resultType="co.kesti.smartcity.api.finedust.vo.FineDustDevStatEvtLogVo">
+        SELECT /* FineDustStatisticsMapper.selectDevStatEvtLogList */
+               log.seq                                                     /* 순번 */
+             , TO_CHAR(log.cret_dt, 'YYYY.MM.DD HH24:MI:SS') AS log_dt     /* 로그일자 */
+             , evt.evnt_nm                                                 /* 이벤트이름 */
+             , log.mng_content                                             /* 관리내용 */
+             , fn_get_cd_dtl_nm('EOBS', log.test_item)       AS evt_obs_nm /* 이벤트측정명 */
+             , log.test_val                                                /* 테스트값 */
+          FROM evnt_info evt /* 이벤트TABLE */
+    INNER JOIN evnt_log log /* 이벤트로그TABLE */
+            ON evt.evnt_id = log.evnt_id
+         WHERE evt.dev_id = #{devId}
+           AND evt.del_yn = 'N'
+           AND log.cret_dt BETWEEN TO_TIMESTAMP(#{strDt} || ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_TIMESTAMP(#{endDt} || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+           AND log.del_yn = 'N'
+         ORDER BY log.seq DESC
+        <if test="pagingSet">
+        OFFSET #{rowIdx} LIMIT #{rowCnt}
+        </if>
     </select>
 
 </mapper>

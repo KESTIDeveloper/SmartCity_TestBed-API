@@ -40,4 +40,11 @@ public class CmntFrumCmtVo extends BaseParamVo {
     /* 삭제여부 */
     private String delYn;
 
+
+    /**
+     * 추가 정보
+     */
+    /* 본인여부 */
+    private Boolean selfYn;
+
 }

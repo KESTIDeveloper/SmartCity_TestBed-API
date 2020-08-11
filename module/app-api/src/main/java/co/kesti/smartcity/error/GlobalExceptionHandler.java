@@ -37,4 +37,12 @@ public class GlobalExceptionHandler {
         return ApiResponse.error(999, e.getMessage());
     }
 
+    @ResponseBody
+    @ResponseStatus(value = HttpStatus.OK)
+    @ExceptionHandler(value = UserOkException.class)
+    public ApiResponse<?> userOkExceptionHandler(UserOkException e) {
+        log.error("{}", e.getMessage(), e);
+        return ApiResponse.error(999, e.getMessage());
+    }
+
 }

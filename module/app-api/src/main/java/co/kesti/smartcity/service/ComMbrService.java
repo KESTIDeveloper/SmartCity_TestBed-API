@@ -35,6 +35,11 @@ public class ComMbrService {
                 .orElseThrow(() -> new ApplicationException(ResponseCode.RESOURCE_NOT_FOUND, "User not found: "+mbrSeq));
     }
 
+    public ComMbr save(ComMbr comMbr) {
+        return comMbrRepository.save(comMbr);
+    }
+
+
     public ComMbr createComMbr(RequestComMbr requestComMbr) {
         ComMbr comMbr = requestComMbr.toComMbr();
         log.info("{}", JsonUtils.toPrettyString(comMbr));

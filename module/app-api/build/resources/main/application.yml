@@ -51,15 +51,15 @@ logging:
   config: classpath:logback-spring.xml
   appender: CONSOLE
 
-
 upload:
-  web:
-    url: /upload/image/
   dir: /upload/
 
 vworld:
   key: ACA018E4-2B19-320B-8699-ACC551467E87
-  
+
+jwt:
+  secret: smartcity
+
 ---
 
 spring:
@@ -86,6 +86,3 @@ logging:
   appender: FILE
 
 cors.allowed-domains: http://localhost:9100
-
-
-

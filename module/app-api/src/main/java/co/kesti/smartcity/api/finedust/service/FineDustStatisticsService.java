@@ -4,9 +4,9 @@ import java.util.List;
 
 import co.kesti.smartcity.api.finedust.vo.FineDustDevObsStscReqVo;
 import co.kesti.smartcity.api.finedust.vo.FineDustDevObsStscVo;
+import co.kesti.smartcity.api.finedust.vo.FineDustDevStatEvtLogVo;
 import co.kesti.smartcity.api.finedust.vo.FineDustDevStatReqVo;
 import co.kesti.smartcity.api.finedust.vo.FineDustDevStatVo;
-
 
 /**
  * 미세먼지 > 통계 서비스
@@ -28,5 +28,12 @@ public interface FineDustStatisticsService {
      * @return
      */
     public FineDustDevStatVo selectDevStatInfo(FineDustDevStatReqVo param);
+
+    /**
+     * 디바이스 상태 이벤트 로그 목록 조회
+     * @param param
+     * @return
+     */
+    public List<FineDustDevStatEvtLogVo> selectDevStatEvtLogList(FineDustDevStatReqVo param);
 
 }

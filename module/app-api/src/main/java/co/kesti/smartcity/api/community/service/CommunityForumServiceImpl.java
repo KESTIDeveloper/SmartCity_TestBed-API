@@ -66,6 +66,14 @@ public class CommunityForumServiceImpl implements CommunityForumService {
     }
 
     /**
+     * 포럼 그룹 정보 조회
+     */
+    @Override
+    public List<CmntFrumGrpVo> selectFrumGrpList() {
+        return communityForumMapper.selectFrumGrpList();
+    }
+
+    /**
      * 포럼 목록 조회
      */
     @Override
@@ -90,17 +98,14 @@ public class CommunityForumServiceImpl implements CommunityForumService {
     @Override
     public CmntFrumVo selectFrumReadInfo(CmntFrumVo param) {
         // 포럼 정보 조회
-        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq());
+        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq(), param.getMbrId());
 
         if (frumInfo == null) {
             throw new UserException("포럼정보가 존재하지 않습니다.");
         }
 
-        // 회원아이디
-        String mbrId = StringUtils.trimToEmpty(param.getMbrId());
-
         // 조회수 더하기
-        if (StringUtils.isNotEmpty(mbrId) && !mbrId.equals(frumInfo.getCretrId())) {
+        if (!frumInfo.getSelfYn()) {
             communityForumMapper.updateFrumHitCntPlus(param);
         }
 
@@ -113,17 +118,13 @@ public class CommunityForumServiceImpl implements CommunityForumService {
     @Override
     public CmntFrumVo selectFrumUptInfo(CmntFrumVo param) {
         // 포럼 정보 조회
-        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq());
+        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq(), param.getMbrId());
 
         if (frumInfo == null) {
             throw new UserException("포럼정보가 존재하지 않습니다.");
         }
 
-        // 회원아이디
-        String mbrId = StringUtils.trimToEmpty(param.getMbrId());
-
-        // 회원 체크
-        if (!mbrId.equals(frumInfo.getCretrId())) {
+        if (!frumInfo.getSelfYn() && !param.getAdmYn()) {
             throw new UserException("본인글만 수정할 수 있습니다.");
         }
 
@@ -140,7 +141,7 @@ public class CommunityForumServiceImpl implements CommunityForumService {
         this.isValidMbr(param.getMbrId());
 
         // 포럼 정보 조회
-        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq());
+        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq(), param.getMbrId());
 
         // 등록
         if (frumInfo == null) {
@@ -150,7 +151,7 @@ public class CommunityForumServiceImpl implements CommunityForumService {
         // 수정
         } else {
             // 회원 체크
-            if (!param.getMbrId().equals(frumInfo.getCretrId())) {
+            if (!frumInfo.getSelfYn() && !param.getAdmYn()) {
                 throw new UserException("본인글만 수정할 수 있습니다.");
             }
 
@@ -169,14 +170,14 @@ public class CommunityForumServiceImpl implements CommunityForumService {
         this.isValidMbr(param.getMbrId());
 
         // 포럼 정보 조회
-        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq());
+        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq(), param.getMbrId());
 
         if (frumInfo == null) {
             throw new UserException("포럼정보가 존재하지 않습니다.");
         }
 
         // 회원 체크
-        if (!param.getMbrId().equals(frumInfo.getCretrId())) {
+        if (!frumInfo.getSelfYn() && !param.getAdmYn()) {
             throw new UserException("본인글만 삭제할 수 있습니다.");
         }
 
@@ -194,14 +195,14 @@ public class CommunityForumServiceImpl implements CommunityForumService {
         this.isValidMbr(param.getMbrId());
 
         // 포럼 정보 조회
-        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq());
+        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq(), param.getMbrId());
 
         if (frumInfo == null) {
             throw new UserException("포럼정보가 존재하지 않습니다.");
         }
 
         // 회원 체크
-        if (param.getMbrId().equals(frumInfo.getCretrId())) {
+        if (frumInfo.getSelfYn()) {
             throw new UserException("본인글은 추천할 수 없습니다.");
         }
 
@@ -223,8 +224,8 @@ public class CommunityForumServiceImpl implements CommunityForumService {
      * 포럼 코멘트 목록 조회
      */
     @Override
-    public List<CmntFrumCmtVo> selectFrumCmtList(Long forumGroupSeq, Long forumSeq) {
-        return communityForumMapper.selectFrumCmtList(forumGroupSeq, forumSeq);
+    public List<CmntFrumCmtVo> selectFrumCmtList(Long forumGroupSeq, Long forumSeq, String mbrId) {
+        return communityForumMapper.selectFrumCmtList(forumGroupSeq, forumSeq, mbrId);
     }
 
     /**
@@ -237,7 +238,7 @@ public class CommunityForumServiceImpl implements CommunityForumService {
         this.isValidMbr(param.getMbrId());
 
         // 포럼 정보 조회
-        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq());
+        CmntFrumVo frumInfo = communityForumMapper.selectFrumInfo(param.getForumGroupSeq(), param.getForumSeq(), param.getMbrId());
 
         if (frumInfo == null) {
             throw new UserException("포럼정보가 존재하지 않습니다.");
@@ -245,6 +246,24 @@ public class CommunityForumServiceImpl implements CommunityForumService {
 
         // 포럼 코멘트 등록
         communityForumMapper.insertFrumCmt(param);
+    }
+
+    /**
+     * 포럼 코멘트 수정
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updateFrumCmt(CmntFrumCmtVo param) {
+        communityForumMapper.updateFrumCmt(param);
+    }
+
+    /**
+     * 포럼 코멘트 삭제
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void deleteFrumCmt(CmntFrumCmtVo param) {
+        communityForumMapper.deleteFrumCmt(param);
     }
 
     /**

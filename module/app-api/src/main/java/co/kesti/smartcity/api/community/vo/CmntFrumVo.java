@@ -37,7 +37,17 @@ public class CmntFrumVo extends BaseParamVo {
     /* 삭제여부 */
     private String delYn;
 
+
+    /**
+     * 추가 정보
+     */
     /* 코멘트수 */
     private Integer cmtCnt;
+
+    /* 본인여부 */
+    private Boolean selfYn;
+
+    /* 관리자여부 */
+    private Boolean admYn = false;
 
 }

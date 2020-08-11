@@ -50,6 +50,8 @@ public class ComMbr extends BaseAuditor  implements Serializable {
 
 	private String amdrId;
 
+	private String countryName;
+
 	private LocalDateTime amdDt;
 
 	private LocalDateTime chgPwdDt;

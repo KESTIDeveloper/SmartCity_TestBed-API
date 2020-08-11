@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CmntPrdtCommnetRepository extends JpaRepository<CmntPrdtComment, Integer> {
@@ -29,7 +30,8 @@ public interface CmntPrdtCommnetRepository extends JpaRepository<CmntPrdtComment
 
             "m.userNm as userNm " +
             "from CmntPrdtComment c, ComMbr m " +
-            "where c.prdtSeq = ?1 and c.cretrId = m.mbrId")
+            "where c.prdtSeq = ?1 and c.cretrId = m.mbrId " +
+            "order by c.prdtCommentSeq asc")
     List<CmntPrdtCommentProjection> findAllByPrdtSeqOrderByCretDtAsc(Integer prdtSeq);
 
 
@@ -37,4 +39,8 @@ public interface CmntPrdtCommnetRepository extends JpaRepository<CmntPrdtComment
     @Modifying
     @Query("update CmntPrdtComment c set c.delYn = 'N' where c.prdtSeq = ?1")
     void deleteAllByPrdtSeq(Integer prdtSeq);
+
+
+    void deleteByPrdtSeqAndPrdtCommentSeq(Integer prdtSeq, Integer prdtCommentSeq);
+
 }

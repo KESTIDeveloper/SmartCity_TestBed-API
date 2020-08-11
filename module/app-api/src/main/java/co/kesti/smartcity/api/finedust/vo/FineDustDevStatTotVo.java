@@ -13,13 +13,22 @@ public class FineDustDevStatTotVo extends BaseVo {
 
     private static final long serialVersionUID = 1L;
 
+    /* 총건수 */
+    private int totCnt;
+
     /* 성공건수 */
-    private Integer succCnt;
+    private int succCnt;
 
     /* 실패건수 */
-    private Integer failCnt;
+    private int failCnt;
 
-    /* 전체건수 */
-    private Integer totCnt;
+    /* 총시간 */
+    private int totHour;
+
+    /* 가동시간 */
+    private int oprtHour;
+
+    /* 비가동시간 */
+    private int noprHour;
 
 }

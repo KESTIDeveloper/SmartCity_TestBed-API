@@ -45,6 +45,14 @@ public class CommunityNoticeServiceImpl implements CommunityNoticeService {
     }
 
     /**
+     * 메인 공지사항 목록 조회
+     */
+    @Override
+    public List<CmntNotiVo> selectMainNotiList() {
+        return communityNoticeMapper.selectMainNotiList();
+    }
+
+    /**
      * 공지사항 읽기 정보 조회
      */
     @Override

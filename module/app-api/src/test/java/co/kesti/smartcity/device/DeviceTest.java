@@ -5,6 +5,7 @@ import co.kesti.smartcity.entity.CmntPrdt;
 import co.kesti.smartcity.entity.DevInfo;
 import co.kesti.smartcity.entity.DevRealtimeObs;
 import co.kesti.smartcity.entity.custom.DevInfoStatsProjection;
+import co.kesti.smartcity.model.DevMonitor;
 import co.kesti.smartcity.model.DevStats;
 import co.kesti.smartcity.model.request.RequestCmntPrdt;
 import co.kesti.smartcity.repository.CmntPrdtRepository;
@@ -78,6 +79,15 @@ class DeviceTest {
     @Test
     public void stats() {
         DevStats res = devMonitorService.getDevStats();
+        log.info("{}", JsonUtils.toPrettyString(res));
+    }
+
+    @Test
+    public void monitoring() {
+//        String devId = "CO0001";
+        String devId = "GALAXYFOLD";
+        DevMonitor res = devMonitorService.getDeviceMonitorByDevId(devId);
+
         log.info("{}", JsonUtils.toPrettyString(res));
     }
 }

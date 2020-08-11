@@ -5,7 +5,6 @@ import co.kesti.smartcity.entity.CmntPrdt;
 import co.kesti.smartcity.entity.CmntPrdtComment;
 import co.kesti.smartcity.entity.ComMbr;
 import co.kesti.smartcity.entity.custom.CmntPrdtCommentProjection;
-import co.kesti.smartcity.entity.custom.CmntPrdtProjection;
 import co.kesti.smartcity.error.ApplicationException;
 import co.kesti.smartcity.error.ResponseCode;
 import co.kesti.smartcity.model.request.RequestCmntPrdt;
@@ -18,8 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -138,10 +137,28 @@ public class CmntPrdtService {
 
 
     public CmntPrdtComment createCmntPrdtComment(RequestCmntPrdtComment request) {
+        log.debug("createCmntPrdtComment: {}", JsonUtils.toString(request));
         return cmntPrdtCommnetRepository.save(request.toCmntPrdtComment());
     }
 
     public List<CmntPrdtCommentProjection> getCmntPrdtComments(Integer prdtSeq) {
         return cmntPrdtCommnetRepository.findAllByPrdtSeqOrderByCretDtAsc(prdtSeq);
+    }
+
+    @Transactional
+    public void deleteComment(Integer prdtSeq, Integer prdtCommentSeq) {
+        cmntPrdtCommnetRepository.deleteByPrdtSeqAndPrdtCommentSeq(prdtSeq, prdtCommentSeq);
+    }
+
+    @Transactional
+    public CmntPrdtComment modifyCmntPrdtComment(RequestCmntPrdtComment request) {
+        CmntPrdtComment cmntPrdtComment = cmntPrdtCommnetRepository.findById(request.getPrdtCommentSeq()).orElseThrow(() -> ApplicationException.builder()
+                .code(ResponseCode.RESOURCE_NOT_FOUND)
+                .build());
+
+        cmntPrdtComment.setPrdtCommentContent(request.getPrdtCommentContent());
+
+        log.debug("modifyCmntPrdtComment: {}", JsonUtils.toString(cmntPrdtComment));
+        return cmntPrdtCommnetRepository.save(request.toCmntPrdtComment());
     }
 }

@@ -64,8 +64,10 @@
              , recmd_cnt                                       /* 추천수 */
              , TO_CHAR(cret_dt, 'YYYY.MM.DD') AS cret_dt       /* 생성일시 */
              , TO_CHAR(cret_dt, 'HH24:MI')    AS cret_tm       /* 생성시간 */
-             , cretr_id                                        /* 생성자ID */
              , fn_mask(cretr_id)              AS cretr_mask_id /* 생성자마스킹ID */
+             , CASE WHEN cretr_id = #{mbrId} THEN TRUE
+                    ELSE FALSE
+               END                            AS self_yn       /* 본인여부 */
           FROM cmnt_forum /* 포럼TABLE */
          WHERE forum_group_seq = #{forumGroupSeq}
            AND forum_seq       = #{forumSeq}
@@ -264,6 +266,9 @@
              , cmt.ip_adress                                             /* 아이피주소 */
              , TO_CHAR(cmt.cret_dt, 'YYYY.MM.DD HH24:MI:SS') AS cret_dt  /* 생성일시 */
              , fn_mask(cmt.cretr_id)                         AS cretr_id /* 생성자ID */
+             , CASE WHEN cmt.cretr_id = #{mbrId} THEN TRUE
+                    ELSE FALSE
+               END                                           AS self_yn  /* 본인여부 */
           FROM cmnt_forum_comment cmt /* 포럼코멘트TABLE */
          WHERE cmt.forum_group_seq = #{forumGroupSeq}
            AND cmt.forum_seq       = #{forumSeq}
@@ -304,5 +309,25 @@
              , #{mbrId}               /* 수정자ID */
         )
     </insert>
+
+    <!-- 포럼 코멘트 수정 -->
+    <update id="updateFrumCmt" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumCmtVo">
+        UPDATE /* CommunityForumMapper.updateFrumCmt */
+               cmnt_forum_comment
+           SET forum_comment_content = #{forumCommentContent} /* 댓글내용 */
+             , amd_dt                = NOW()                  /* 수정일시 */
+             , amdr_id               = #{mbrId}               /* 수정자ID */
+         WHERE forum_comment_seq = #{forumCommentSeq}
+    </update>
+
+    <!-- 포럼 코멘트 삭제 -->
+    <update id="deleteFrumCmt" parameterType="co.kesti.smartcity.api.community.vo.CmntFrumCmtVo">
+        UPDATE /* CommunityForumMapper.deleteFrumCmt */
+               cmnt_forum_comment
+           SET del_yn  = 'Y'      /* 삭제여부 */
+             , amd_dt  = NOW()    /* 수정일시 */
+             , amdr_id = #{mbrId} /* 수정자ID */
+         WHERE forum_comment_seq = #{forumCommentSeq}
+    </update>
 
 </mapper>

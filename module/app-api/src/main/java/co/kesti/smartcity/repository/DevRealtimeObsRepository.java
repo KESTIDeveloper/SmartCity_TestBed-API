@@ -19,4 +19,5 @@ public interface DevRealtimeObsRepository extends JpaRepository<DevRealtimeObs, 
     List<DevRealtimeObs> getLatestObsItemValue(String devId, String obsItemId, Pageable pageable);
 
 
+    Optional<DevRealtimeObs> findTopByDevRealtimeObsKey_DevId(String devId);
 }

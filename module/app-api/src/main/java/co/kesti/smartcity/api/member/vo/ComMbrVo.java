@@ -64,4 +64,14 @@ public class ComMbrVo extends BaseVo {
     /* 로그인실패횟수 */
     private Integer loginFailTmscnt;
 
+    /* 국가이름 */
+    private String countryName;
+
+
+    /**
+     * 추가 정보
+     */
+    /* 인증키 */
+    private String authKey;
+
 }

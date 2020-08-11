@@ -4,6 +4,8 @@ import java.util.List;
 
 import co.kesti.smartcity.api.management.vo.MgmtEvtDelReqVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtDtlVo;
+import co.kesti.smartcity.api.management.vo.MgmtEvtLogReqVo;
+import co.kesti.smartcity.api.management.vo.MgmtEvtLogVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtReadVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtReqVo;
 import co.kesti.smartcity.api.management.vo.MgmtEvtVo;
@@ -59,5 +61,12 @@ public interface ManagementEventService {
      * @param param
      */
     public void deleteEvtMulti(MgmtEvtDelReqVo param);
+
+    /**
+     * 이벤트 로그 목록 조회
+     * @param param
+     * @return
+     */
+    public List<MgmtEvtLogVo> selectEvtLogList(MgmtEvtLogReqVo param);
 
 }

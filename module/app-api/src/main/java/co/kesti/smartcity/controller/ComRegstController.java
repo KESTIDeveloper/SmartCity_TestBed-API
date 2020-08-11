@@ -9,6 +9,7 @@ import co.kesti.smartcity.service.ComRegstService;
 import co.kesti.smartcity.service.PageMaker;
 import co.kesti.smartcity.util.JsonUtils;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -57,6 +58,7 @@ public class ComRegstController {
         return ApiResponse.ok(res);
     }
 
+    @ApiOperation("테스트 베드 신청하기")
     @PostMapping("/comregst")
     public ApiResponse createComRegst(@RequestBody RequestComRegst request) {
         log.info("{}", JsonUtils.toPrettyString(request));

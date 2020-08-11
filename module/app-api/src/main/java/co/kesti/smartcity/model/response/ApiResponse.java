@@ -32,9 +32,9 @@ public class ApiResponse<T> {
         return ApiResponse.builder().status(true).code(ResponseCode.OK.getHttpStatus().value()).build();
     }
 
-    public static ApiResponse ok(String message) {
-        return ApiResponse.builder().status(true).code(ResponseCode.OK.getHttpStatus().value()).message(message).build();
-    }
+//    public static ApiResponse ok(String message) {
+//        return ApiResponse.builder().status(true).code(ResponseCode.OK.getHttpStatus().value()).message(message).build();
+//    }
 
     public static ApiResponse error(int code, String msg) {
         return ApiResponse.builder().status(false).code(code).message(msg).build();

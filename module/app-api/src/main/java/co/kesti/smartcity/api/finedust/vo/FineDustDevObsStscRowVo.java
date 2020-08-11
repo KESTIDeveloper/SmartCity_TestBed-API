@@ -20,6 +20,6 @@ public class FineDustDevObsStscRowVo extends BaseVo {
     private String obsItemId;
 
     /* 측정항목값 */
-    private String obsItemValue;
+    private double obsItemValue;
 
 }

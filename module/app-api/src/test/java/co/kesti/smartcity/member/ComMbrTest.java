@@ -10,12 +10,10 @@ import co.kesti.smartcity.model.request.RequestCmntPrdt;
 import co.kesti.smartcity.repository.ComMbrRepository;
 import co.kesti.smartcity.repository.ComRegstRepository;
 import co.kesti.smartcity.repository.DevInfoRepository;
-import co.kesti.smartcity.service.CdDtlService;
-import co.kesti.smartcity.service.CmntPrdtService;
-import co.kesti.smartcity.service.ComMbrService;
-import co.kesti.smartcity.service.PageMaker;
+import co.kesti.smartcity.service.*;
 import co.kesti.smartcity.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
@@ -31,6 +33,8 @@ import java.util.stream.IntStream;
 @SpringBootTest
 class ComMbrTest {
 
+    @Autowired
+    private HttpClientTemplate httpClientTemplate;
 
     @Autowired
     private ComMbrRepository comMbrRepository;
@@ -57,5 +61,21 @@ class ComMbrTest {
         log.info("{}", JsonUtils.toPrettyString(list));
     }
 
+    @Test
+    public void countryTest() throws IOException {
+        String aa = getCountry("203.236.8.208");
 
+        log.info("{}", aa);
+    }
+
+
+    public String getCountry(String ip) {
+        String response =  httpClientTemplate.get("http://ip2c.org/"+ip, String.class);
+        String[] data = StringUtils.split(response, ";");
+        if (data.length >=3) {
+            return String.format("%s;%s", data[1], data[2]);
+        } else {
+            return "";
+        }
+    }
 }
