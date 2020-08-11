@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="co.kesti.smartcity.api.common.mapper.CommonCodeMapper">
+
+    <!--
+     * ================
+     * ### 공통코드 ###
+     * ================
+     * @author atom
+     * @since  2020.08.05
+    -->
+
+    <!-- 공통 코드 목록 조회 -->
+    <select id="selectComCdList" resultType="co.kesti.smartcity.api.common.vo.ComCdVo">
+        SELECT /* CommonCodeMapper.selectComCdList */
+               dtl.dtl_cd    AS key    /* 키 */
+             , dtl.dtl_cd_nm AS txt    /* 텍스트 */
+             , FALSE         AS act_yn /* 활성화여부 */
+          FROM cd_dtl dtl /* 코드상세TABLE */
+         WHERE dtl.cd_group_id = #{cdGroupId}
+           AND dtl.lang_cd = 'KOR'
+           AND dtl.use_yn = 'Y'
+           AND dtl.del_yn = 'N'
+         ORDER BY dtl.indc_odrg ASC, dtl.dtl_cd ASC
+    </select>
+
+</mapper>
